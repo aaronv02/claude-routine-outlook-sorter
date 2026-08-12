@@ -55,6 +55,9 @@ job.
 
 - Node 20+
 - A **work or school Microsoft 365 account** — the mailbox to be sorted.
+- Permission to register an app in that account's directory. Most tenants let any
+  user do this; some restrict it to administrators, and if yours does, that one
+  step has to be done by whoever administers the Microsoft 365 account.
 - A way to run a scheduled Claude task with this repository as its working
   directory.
 
@@ -64,85 +67,79 @@ No Gemini or OpenAI key. No database. No server. No hosting.
 
 ## Setup
 
-### 1. Install
-
 ```bash
 npm install
+npm run setup
 ```
 
-### 2. Register an app so the routine can reach the mailbox
+That's it. `npm run setup` is a wizard: it walks through the one manual step,
+takes the sign-in, writes its own configuration, prepares the mailbox, and
+finishes by running a real sweep so you can see it working before you schedule
+anything.
 
-A scheduled job has no browser to sign in with, so it needs a credential that
-survives between runs. This is the one real cost of running as a routine.
+Budget about ten minutes, and **have the mailbox owner with you** — they sign in
+at step 3, and whoever signs in is whose mail gets sorted.
 
-1. Go to the [Entra portal → App registrations](https://entra.microsoft.com) →
-   **New registration**. Name it `Outlook Sorter Routine`. For supported account
-   types, **Accounts in this organizational directory only** is fine.
-2. **Authentication** → **Add a platform** → **Mobile and desktop applications**
-   → check `https://login.microsoftonline.com/common/oauth2/nativeclient`.
-3. On that same page, set **Allow public client flows** to **Yes**. Without this,
-   step 4 fails.
-4. **API permissions** → **Add a permission** → **Microsoft Graph** → **Delegated
-   permissions**: `Mail.ReadWrite`, `MailboxSettings.ReadWrite`, `User.Read`,
-   `offline_access`. None of these require admin consent.
-5. Copy the **Application (client) ID**.
+What it does, in order:
 
-> It must be a **public client**, not a single-page application. Refresh tokens
-> issued to an SPA are capped at 24 hours by Entra, which is useless for a
-> scheduled job. Public-client tokens last 90 days and the window rolls forward
-> every time the routine runs.
->
-> These are *delegated* permissions, so the credential can only ever reach the one
-> mailbox that signs in. Nothing here grants access to anyone else's mail, and no
-> administrator has to approve anything.
+1. **Register an app** — the only part that isn't automated. Four numbered clicks
+   in the Entra portal, printed with the exact button names. A JSON shortcut is
+   offered if you'd rather paste than click.
+2. **Take the client and tenant IDs**, both from the same portal page.
+3. **Sign in**, by device code — a URL and a short code, copied to your clipboard.
+   Then it checks that all four permissions were actually granted, and names any
+   that weren't.
+4. **Prepare the mailbox** — creates the category labels, then reads how the
+   mailbox is already filed to learn its regular senders, and tells you how many
+   it found.
+5. **Run one sweep** — reads the inbox and writes `routine/.local/plan.json`
+   showing what it would label. Nothing is written to the mailbox in this step.
 
-### 3. Configure
+Every step verifies itself. A missing permission, a registration made as the wrong
+platform, a tenant that blocks app creation — each is caught while you're still
+sitting there, and named in words that say what to do about it.
 
-```bash
-export STEWARD_CLIENT_ID=<the Application (client) ID from step 2>
-export STEWARD_TENANT=<your tenant ID>          # optional; defaults to "organizations"
-```
+### Then schedule it
 
-### 4. Sign in, once
+The wizard prints this at the end. Create a scheduled Claude task with:
 
-```bash
-npm run login
-```
-
-It prints a URL and a short code. **The mailbox owner signs in here, not you** —
-the credential inherits whoever consents.
-
-The refresh token is written to `routine/.local/refresh-token` (mode 600) and also
-stored in the mailbox itself. That path is gitignored. Treat it as what it is: a
-90-day key to her mail.
-
-### 5. Try one sweep by hand before scheduling it
-
-```bash
-npm run plan
-```
-
-Open `routine/.local/plan.json`. Confirm the pending messages look like real mail,
-and that the first-run note reports a sensible number of senders learned from how
-she already files things. Then classify two or three by hand into
-`routine/.local/verdicts.json` — the shape is in [routine/PROMPT.md](routine/PROMPT.md)
-— and run:
-
-```bash
-npm run apply
-```
-
-Check the mailbox. The labels should be on those messages, and any categories of
-her own should still be there alongside.
-
-### 6. Schedule it
-
-Create a scheduled Claude task whose working directory is this repository, whose
-environment carries `STEWARD_CLIENT_ID` and `STEWARD_REFRESH_TOKEN`, and whose
-prompt is the text in **[routine/PROMPT.md](routine/PROMPT.md)**.
+- **working directory** — this folder
+- **prompt** — the text in **[routine/PROMPT.md](routine/PROMPT.md)**
+- **environment** — `STEWARD_CLIENT_ID`, `STEWARD_TENANT`, and
+  `STEWARD_REFRESH_TOKEN`, all three written into `.env` by setup. Copy them into
+  the runner as secrets.
 
 Hourly during the working day is the sensible cadence. More often buys little —
 promoted senders are already being labelled on arrival by Outlook itself.
+
+### If something goes wrong
+
+Run `npm run setup` again. It's safe to repeat: it re-signs in and rewrites `.env`,
+and the mailbox work it does is idempotent.
+
+<details>
+<summary>What the app registration needs, if you'd rather do it by hand</summary>
+
+1. [Entra portal → App registrations](https://aka.ms/appregistrations) → **New
+   registration**. Name it anything.
+2. **Authentication** → **Add a platform** → **Mobile and desktop applications**
+   → check `https://login.microsoftonline.com/common/oauth2/nativeclient`.
+3. Same page: **Allow public client flows** → **Yes**.
+4. **API permissions** → **Microsoft Graph** → **Delegated permissions**:
+   `Mail.ReadWrite`, `MailboxSettings.ReadWrite`, `User.Read`, `offline_access`.
+   None require admin consent.
+5. Copy the **Application (client) ID** and **Directory (tenant) ID** from
+   **Overview**.
+
+It must be a **public client**, not a single-page application. Refresh tokens
+issued to an SPA are capped at 24 hours by Entra, which is useless for a scheduled
+job; public-client tokens last 90 days and the window rolls forward on every run.
+
+These are *delegated* permissions, so the credential can only ever reach the one
+mailbox that signs in. It grants nothing over anyone else's mail.
+
+Then `npm run login` instead of `npm run setup`.
+</details>
 
 ---
 
@@ -229,7 +226,8 @@ Other knobs, in `DEFAULT_SETTINGS`:
 
 | | |
 |---|---|
-| `npm run login` | Device-code sign-in. Once per 90 days at worst. |
+| `npm run setup` | Guided first-time setup. Run this first. |
+| `npm run login` | Re-sign-in only, without the rest of setup. |
 | `npm run plan` | Learn corrections, run sender rules, write `plan.json`. |
 | `npm run apply` | Gate the verdicts, write categories, promote senders. |
 | `npm test` | 25 offline checks. No network, no mailbox, no key. |
@@ -251,7 +249,8 @@ and repeatable. Claude is asked to do only the part that actually needs a model.
   herself, use the add-in version instead (below).
 - **90-day credential ceiling.** Entra expires the refresh token if it goes unused
   for 90 days, and revokes it on a password change. The routine then fails with
-  `invalid_grant` and someone has to run `npm run login` again.
+  `invalid_grant`, and someone has to run `npm run setup` again. Whoever installs
+  this is the person who will hear about that; she can't fix it herself.
 - **Native rule quota.** Exchange allows roughly 256 KB of rule data per mailbox.
   Senders are consolidated at up to 60 per rule and promotion stops at 160 KB to
   leave room.

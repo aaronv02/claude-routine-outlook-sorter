@@ -41,6 +41,7 @@ import {
 import { categoryToApply, gate } from '../src/classify/confidence.js';
 import { markPromoted, promoteRules } from '../src/promote.js';
 import { NEEDS_REVIEW_ID, categoryById, selectableCategories } from '../src/taxonomy.js';
+import { loadEnv } from './env.js';
 import { mergeCategories } from './merge.js';
 import { loadState, saveState, type RoutineState } from './store.js';
 import { assertConfigured, pollDeviceCode, redeemRefreshToken, startDeviceCode } from './auth.js';
@@ -74,6 +75,9 @@ const CORRECTION_MEMORY = 30;
  * the stored token has gone stale.
  */
 async function authenticate(): Promise<{ token: string; state: RoutineState }> {
+  // Configuration comes from .env unless the environment already carries it,
+  // so a scheduled run can use secrets while a local run uses the file.
+  await loadEnv();
   assertConfigured();
   const fromEnv = process.env.STEWARD_REFRESH_TOKEN;
 

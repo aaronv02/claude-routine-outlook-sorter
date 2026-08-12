@@ -2,5 +2,8 @@ node_modules/
 .DS_Store
 *.log
 
+# Written by `npm run setup`. Holds a credential to the mailbox.
+.env
+
 # Holds the refresh token, the plan, and the verdicts. Never commit this.
 routine/.local/

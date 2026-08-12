@@ -31,24 +31,54 @@ const AUTHORITY = 'https://login.microsoftonline.com';
  * the add-in's delegated permissions exactly, so the routine can do nothing the
  * taskpane couldn't already do.
  */
+export const REQUIRED_SCOPES = [
+  'Mail.ReadWrite',
+  'MailboxSettings.ReadWrite',
+  'User.Read',
+] as const;
+
 export const SCOPES = [
   'offline_access',
-  'https://graph.microsoft.com/Mail.ReadWrite',
-  'https://graph.microsoft.com/MailboxSettings.ReadWrite',
-  'https://graph.microsoft.com/User.Read',
+  ...REQUIRED_SCOPES.map((s) => `https://graph.microsoft.com/${s}`),
 ].join(' ');
+
+/**
+ * Which required scopes are missing from what Entra actually granted.
+ *
+ * Compared on the short name because Entra reports them inconsistently -
+ * sometimes bare, sometimes fully qualified with the resource URI.
+ */
+export function missingScopes(grantedScopes: string): string[] {
+  const granted = new Set(
+    grantedScopes
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((s) => (s.includes('/') ? (s.split('/').pop() as string) : s))
+      .map((s) => s.toLowerCase()),
+  );
+  return REQUIRED_SCOPES.filter((s) => !granted.has(s.toLowerCase()));
+}
 
 export interface TokenSet {
   accessToken: string;
   /** Entra rotates this on every exchange. Persisting the new one keeps the 90-day window rolling. */
   refreshToken: string;
   expiresAt: number;
+  /**
+   * Scopes actually granted, space-separated, as reported by Entra.
+   *
+   * Worth carrying because it is the only reliable way to catch a permission
+   * that was never added to the app registration: sign-in succeeds either way,
+   * and the omission would otherwise surface much later as an opaque Graph 403.
+   */
+  grantedScopes: string;
 }
 
 interface TokenResponse {
   access_token: string;
   refresh_token?: string;
   expires_in: number;
+  scope?: string;
 }
 
 function config() {
@@ -112,6 +142,7 @@ export async function redeemRefreshToken(refreshToken: string): Promise<TokenSet
     // correct because the previous token stays valid until its own window ends.
     refreshToken: res.refresh_token ?? refreshToken,
     expiresAt: Date.now() + res.expires_in * 1000,
+    grantedScopes: res.scope ?? '',
   };
 }
 
@@ -143,9 +174,17 @@ export async function startDeviceCode(): Promise<DeviceCode> {
     body: new URLSearchParams({ client_id: clientId, scope: SCOPES }),
   });
   if (!res.ok) {
-    throw new Error(
-      `Could not start device code flow (${res.status}). Check that the app registration has "Allow public client flows" enabled. ${await res.text()}`,
-    );
+    const detail = await res.text();
+
+    // Two very different causes reach this branch, and conflating them sends
+    // people to the wrong portal page. AADSTS50059 means Entra could not work
+    // out which directory to ask - a tenant problem. Everything else here is
+    // almost always the public-client setting.
+    const cause = /AADSTS50059|tenant-identifying/i.test(detail)
+      ? 'Set STEWARD_TENANT to the Directory (tenant) ID from the app registration\'s Overview page.'
+      : 'Check that the app registration has "Allow public client flows" set to Yes on its Authentication page.';
+
+    throw new Error(`Could not start sign-in (${res.status}). ${cause}\n\n${detail}`);
   }
   const body = (await res.json()) as {
     user_code: string;
@@ -195,6 +234,7 @@ export async function pollDeviceCode(code: DeviceCode): Promise<TokenSet> {
         accessToken: body.access_token,
         refreshToken: body.refresh_token,
         expiresAt: Date.now() + body.expires_in * 1000,
+        grantedScopes: body.scope ?? '',
       };
     }
 
