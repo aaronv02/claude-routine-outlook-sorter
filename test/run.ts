@@ -31,7 +31,12 @@ import {
 import { categoryToApply, gate } from '../src/classify/confidence.js';
 import { detectCorrections, needsClassification } from '../src/engine.js';
 import { mergeCategories } from '../routine/merge.js';
-import { runDigestChecks, runDesktopChecks, runStateChecks } from './digest.js';
+import {
+  runDigestChecks,
+  runDesktopChecks,
+  runStateChecks,
+  runPromptFileChecks,
+} from './digest.js';
 
 let passed = 0;
 const failures: string[] = [];
@@ -325,6 +330,7 @@ check('duplicate names are made unique', () => {
 runDigestChecks(check, assert);
 await runDesktopChecks(checkAsync, assert);
 await runStateChecks(check, assert);
+await runPromptFileChecks(check, assert);
 
 // ---------------------------------------------------------------------------
 

@@ -657,3 +657,62 @@ export async function runStateChecks(check: Check, assert: Assert): Promise<void
     assert(recovered.version === 1, 'could not unescape legacy state');
   });
 }
+
+// ---------------------------------------------------------------------------
+// Prompt extraction
+//
+// The prompt documents open with an explanation aimed at a person, including a
+// sentence telling the reader to paste the text below. Feeding the whole file to a
+// model hands it that commentary as instructions.
+// ---------------------------------------------------------------------------
+
+export async function runPromptFileChecks(check: Check, assert: Assert): Promise<void> {
+  const { extractPrompt, PROMPT_MARKER } = await import('../routine/prompt-file.js');
+  const { readFile } = await import('node:fs/promises');
+  const { fileURLToPath } = await import('node:url');
+  const { dirname, resolve } = await import('node:path');
+
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+  check('the explanation above the marker is dropped', () => {
+    const doc = `# Title\n\nPaste the text below into a scheduled task.\n\n${PROMPT_MARKER}\n\nYou are running a sweep.`;
+    const out = extractPrompt(doc);
+    assert(!out.includes('Paste the text below'), 'kept the instructions-to-the-human');
+    assert(out.startsWith('You are running'), `unexpected start: ${out.slice(0, 40)}`);
+  });
+
+  check('a horizontal rule under the marker is not treated as content', () => {
+    const out = extractPrompt(`x\n${PROMPT_MARKER}\n\n---\n\nYou are running a sweep.`);
+    assert(out.startsWith('You are running'), `unexpected start: ${out.slice(0, 40)}`);
+  });
+
+  check('a document with no marker fails loudly', () => {
+    let threw = false;
+    try {
+      extractPrompt('# Just a document\n\nNo marker here.', 'FAKE.md');
+    } catch (err) {
+      threw = true;
+      assert(String(err).includes('FAKE.md'), 'error did not name the file');
+    }
+    assert(threw, 'silently returned something for a markerless document');
+  });
+
+  for (const name of ['PROMPT.md', 'PROMPT-WEEKLY.md']) {
+    await (async () => {
+      const doc = await readFile(resolve(root, 'routine', name), 'utf8');
+      check(`${name} yields a usable prompt`, () => {
+        const out = extractPrompt(doc, name);
+        assert(out.length > 400, `suspiciously short: ${out.length} chars`);
+        assert(
+          !out.includes('copy from here down'),
+          'the marker itself leaked into the prompt',
+        );
+        assert(
+          !out.toLowerCase().includes('paste it as the prompt'),
+          'the human-facing preamble leaked into the prompt',
+        );
+        assert(out.includes('npm run'), 'the prompt lost its commands');
+      });
+    })();
+  }
+}

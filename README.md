@@ -179,7 +179,7 @@ takes the sign-in, writes its own configuration, prepares the mailbox, and
 finishes by running a real sweep so you can see it working before you schedule
 anything.
 
-Budget about ten minutes, and **have the mailbox owner with you** — they sign in
+Budget about fifteen minutes, and **have the mailbox owner with you** — they sign in
 at step 3, and whoever signs in is whose mail gets sorted.
 
 What it does, in order:
@@ -199,6 +199,9 @@ What it does, in order:
 6. **Connect to Claude Desktop** — optional, and only useful on the machine where
    Claude Desktop is installed. Adds one entry to its config and leaves any other
    MCP servers alone.
+7. **Install the schedules** — two Windows scheduled tasks, so the sorting and the
+   Friday summary run on their own. Offers to install the Claude Code CLI if it is
+   missing.
 
 Every step verifies itself. A missing permission, a registration made as the wrong
 platform, a tenant that blocks app creation — each is caught while you're still
@@ -216,20 +219,57 @@ You can do this later instead with `npm run connect`, and undo it with
 
 ### Then schedule them
 
-The wizard prints this at the end. Create **two** scheduled Claude tasks, both with
-this folder as their working directory and both carrying `STEWARD_CLIENT_ID`,
-`STEWARD_TENANT`, and `STEWARD_REFRESH_TOKEN` in their environment — all three are
-written into `.env` by setup. Copy them into the runner as secrets.
+Step 7 of the wizard offers to do this. It installs two Windows scheduled tasks:
+
+| Task | When |
+|---|---|
+| `Outlook Sorter - Sort` | Hourly, 8:00–18:00 |
+| `Outlook Sorter - Weekly` | Fridays at 15:00 |
+
+Or run it yourself, with whatever hours suit:
+
+```
+.\scripts\install-tasks.ps1 -StartHour 7 -EndHour 19 -SummaryTime 16:30
+```
+
+Everything then lives on one computer. No cloud runner, no secret anywhere but that
+machine, nothing depending on anyone else's account.
+
+**This needs the Claude Code CLI**, which is what actually reads the mail and
+decides — the installer offers to install it, and it must be signed in to Claude
+once. Do that while you're still sitting there.
+
+Both tasks run only while that user is logged on. That's deliberate rather than a
+limitation papered over: running as a service would mean storing the account
+password, and the weekly summary already reports the week it *missed* if a run
+doesn't happen. A laptop closed on Friday afternoon is a case the tool handles, not
+one it has to prevent.
+
+Sorting more often than hourly buys little — promoted senders are already being
+labelled on arrival by Outlook itself.
+
+Remove them again with `.\scripts\uninstall-tasks.ps1`. That stops the schedule and
+changes nothing else.
+
+<details>
+<summary>Running it in the cloud instead</summary>
+
+Create two scheduled Claude tasks, both with this folder as their working directory
+and both carrying `STEWARD_CLIENT_ID`, `STEWARD_TENANT`, and
+`STEWARD_REFRESH_TOKEN` in their environment — all three are written into `.env` by
+setup. Copy them in as secrets.
 
 | | Prompt | When |
 |---|---|---|
 | Sorter | [routine/PROMPT.md](routine/PROMPT.md) | Hourly during the working day |
 | Weekly summary | [routine/PROMPT-WEEKLY.md](routine/PROMPT-WEEKLY.md) | Friday mid-afternoon |
 
-Sorting more often than hourly buys little — promoted senders are already being
-labelled on arrival by Outlook itself.
+Runs whether the laptop is on or not, at the cost of a 90-day credential living in
+someone else's runner. State lives in the mailbox either way, so an ephemeral
+sandbox is fine.
+</details>
 
-Either can be scheduled without the other.
+Either routine can be scheduled without the other.
 
 ### Three things the installer will not do
 
@@ -391,10 +431,12 @@ For the weekly summary:
 | `npm run plan` | Learn corrections, run sender rules, write `plan.json`. |
 | `npm run apply` | Gate the verdicts, write categories, promote senders. |
 | `npm run weekly` | Read the week and write `digest.json`. Touches nothing. |
+| `npm run sort` | One sorting sweep, start to finish, via the Claude Code CLI. |
+| `npm run summary` | One end-of-week summary, same way. |
 | `npm run connect` | Register the MCP server with Claude Desktop. |
 | `npm run disconnect` | Remove it again. Leaves other MCP servers alone. |
 | `npm run mcp` | Run the MCP server by hand. Claude Desktop normally does this. |
-| `npm test` | 70 offline checks. No network, no mailbox, no key. |
+| `npm test` | 80 offline checks. No network, no mailbox, no key. |
 | `npm run typecheck` | |
 
 The split is the point: deterministic mailbox I/O stays in code, where it's cheap
@@ -404,6 +446,9 @@ and repeatable. Claude is asked to do only the part that actually needs a model.
 
 ## Known limits
 
+- **Scheduled tasks need that user logged on.** They don't run on the lock screen as
+  a service, because that would mean storing the account password. A missed run is
+  picked up when the machine next wakes.
 - **The MCP server needs Claude Desktop open**, on the machine it was installed on,
   and a full quit-and-reopen after connecting — closing the window is not enough.
   It cannot be reached from a phone or from claude.ai.

@@ -28,6 +28,8 @@ import {
 } from './auth.js';
 import { loadState, saveState } from './store.js';
 import { connectToDesktop } from './desktop.js';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { bootstrapSenderRules } from '../src/classify/rules.js';
 import { ensureMasterCategories, listCategorizedHistory, listRecentInbox } from '../src/graph.js';
 import { categoryById } from '../src/taxonomy.js';
@@ -37,6 +39,8 @@ const dim = (s: string) => `\x1b[2m${s}\x1b[0m`;
 const green = (s: string) => `\x1b[32m${s}\x1b[0m`;
 const red = (s: string) => `\x1b[31m${s}\x1b[0m`;
 const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
+
+const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const rl = createInterface({ input: stdin, output: stdout });
 
@@ -144,7 +148,7 @@ async function main(): Promise<void> {
   }
 
   // -------------------------------------------------------------------------
-  heading(1, 6, 'Register an app so this can reach the mailbox');
+  heading(1, 7, 'Register an app so this can reach the mailbox');
 
   console.log(`This is the only step that isn't automated. Six clicks, about three minutes.
 Everything after it is checked for you, so mistakes here get caught, not inherited.
@@ -189,7 +193,7 @@ to do this one step. Nothing else here works until the registration exists.
 `);
 
   // -------------------------------------------------------------------------
-  heading(2, 6, 'Tell this tool about that app');
+  heading(2, 7, 'Tell this tool about that app');
 
   console.log(`On the app's ${bold('Overview')} page, copy ${bold('Application (client) ID')}.\n`);
 
@@ -216,7 +220,7 @@ to do this one step. Nothing else here works until the registration exists.
   process.env.STEWARD_TENANT = tenant;
 
   // -------------------------------------------------------------------------
-  heading(3, 6, 'The mailbox owner signs in');
+  heading(3, 7, 'The mailbox owner signs in');
 
   console.log('This is the part they do. It creates the key this tool uses from then on.\n');
 
@@ -272,7 +276,7 @@ to do this one step. Nothing else here works until the registration exists.
   console.log(`  ${green('✓')} Saved to ${ENV_PATH} ${dim('(mode 600, gitignored)')}`);
 
   // -------------------------------------------------------------------------
-  heading(4, 6, 'Prepare the mailbox');
+  heading(4, 7, 'Prepare the mailbox');
 
   const state = await loadState(tokens.accessToken);
 
@@ -332,7 +336,7 @@ to do this one step. Nothing else here works until the registration exists.
   console.log(`\n  ${green('✓')} Can read the inbox (${inbox.length} recent message(s) visible).`);
 
   // -------------------------------------------------------------------------
-  heading(5, 6, 'One real sweep, so you can see it work');
+  heading(5, 7, 'One real sweep, so you can see it work');
 
   console.log(
     `This runs ${bold('npm run plan')}: it reads the inbox and works out what it would\nlabel. It writes nothing to the mailbox.\n`,
@@ -346,7 +350,7 @@ to do this one step. Nothing else here works until the registration exists.
   }
 
   // -------------------------------------------------------------------------
-  heading(6, 6, 'Connect it to Claude Desktop (optional)');
+  heading(6, 7, 'Connect it to Claude Desktop (optional)');
 
   console.log(`The two schedules push reports at her. This adds the other direction: she can
 open Claude and ${bold('ask')} - "who is waiting on me?", "catch me up, I was out
@@ -375,6 +379,39 @@ where it runs.
     }
   }
 
+  // -------------------------------------------------------------------------
+  heading(7, 7, 'Put it on a schedule');
+
+  let scheduled = false;
+
+  if (platform === 'win32') {
+    console.log(`Two scheduled tasks on this machine: sorting hourly through the working day,
+and the summary on Friday afternoon. Nothing in the cloud, no credential
+anywhere but here.
+
+This needs the ${bold('Claude Code CLI')} - it is what reads the mail and decides. The
+installer offers to install it if it is missing, and it needs signing in to Claude
+once, which is a good thing to do while you are still sitting here.
+`);
+
+    const wantTasks = await rl.question('Set up the scheduled tasks now? [Y/n] ');
+    if (!wantTasks.trim().toLowerCase().startsWith('n')) {
+      rl.close();
+      console.log('');
+      await runScript('powershell', [
+        '-ExecutionPolicy',
+        'Bypass',
+        '-File',
+        resolve(PROJECT_ROOT, 'scripts', 'install-tasks.ps1'),
+      ]);
+      scheduled = true;
+    }
+  } else {
+    console.log(`${dim('The scheduled-task installer is Windows-only, and this is not Windows.')}
+${dim('On the target machine, run: .\\scripts\\install-tasks.ps1')}
+`);
+  }
+
   finished = true;
   console.log(`
 ${bold('Done.')} What's left:
@@ -382,13 +419,17 @@ ${bold('Done.')} What's left:
   ${bold('1.')} Look at ${bold('routine/.local/plan.json')}. The "pending" list is the mail it wants
      help with. If that looks like real mail, everything works.
 
-  ${bold('2.')} Schedule the two routines. Both use this folder as their working
-     directory, and both need STEWARD_CLIENT_ID, STEWARD_TENANT and
-     STEWARD_REFRESH_TOKEN in their environment.
-     ${dim('(All three are in .env - copy them into the runner as secrets.)')}
+${scheduled ? `  ${bold('2.')} The schedules are installed. Check them any time in Task Scheduler under
+     "Outlook Sorter", and watch what they do in routine\\.local\\logs\\.` : `  ${bold('2.')} Put it on a schedule. On this machine:
+
+       .\\scripts\\install-tasks.ps1
+
+     Or, to run it in the cloud instead, create two scheduled tasks with this
+     folder as their working directory, STEWARD_CLIENT_ID, STEWARD_TENANT and
+     STEWARD_REFRESH_TOKEN in their environment, and these as their prompts:
 
        routine/PROMPT.md          sorts mail        hourly, working day
-       routine/PROMPT-WEEKLY.md   weekly summary    Friday mid-afternoon
+       routine/PROMPT-WEEKLY.md   weekly summary    Friday mid-afternoon`}
 
 ${connected ? `  ${bold('3.')} ${bold('Fully quit Claude Desktop and reopen it')} so it picks up the new tools.
      Closing the window is not enough - quit it from the system tray. Then ask
@@ -421,10 +462,19 @@ async function whoami(token: string): Promise<string | null> {
  * the schedule will actually invoke.
  */
 function runPlan(): Promise<void> {
+  return runScript('npm', ['run', '--silent', 'plan']);
+}
+
+function runScript(command: string, args: string[]): Promise<void> {
   return new Promise((done) => {
-    const child = spawn('npm', ['run', '--silent', 'plan'], { stdio: 'inherit', shell: false });
+    // stdio inherited so the child can prompt directly; shell: false so nothing
+    // re-parses the arguments.
+    const child = spawn(command, args, { stdio: 'inherit', shell: false });
     child.on('close', () => done());
-    child.on('error', () => done());
+    child.on('error', (err) => {
+      console.log(red(`\nCould not run ${command}: ${err.message}`));
+      done();
+    });
   });
 }
 
