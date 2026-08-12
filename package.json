@@ -19,7 +19,8 @@
     "test": "tsx test/run.ts",
     "typecheck": "tsc --noEmit",
     "accuracy": "tsx test/accuracy.ts",
-    "scenario": "tsx test/scenario.ts"
+    "scenario": "tsx test/scenario.ts",
+    "loop": "tsx test/loop.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",

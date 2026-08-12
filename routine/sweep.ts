@@ -489,18 +489,36 @@ async function apply(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// CLI
+// ---------------------------------------------------------------------------
 
-const command = process.argv[2];
+// Exported so the end-to-end harness can drive the real commands rather than a
+// re-implementation of them. A test that reproduces the orchestration it is meant
+// to be checking proves only that the copy agrees with itself.
+export { plan, apply, login };
 
 const commands: Record<string, () => Promise<void>> = { login, plan, apply };
-const run = commands[command ?? ''];
 
-if (!run) {
-  console.error('usage: npm run <login|plan|apply>');
-  process.exit(1);
+/**
+ * Only dispatch when this file was executed, not when it was imported.
+ *
+ * Without the guard, importing anything from here runs the CLI - which for a test
+ * process means `process.exit(1)` and a usage message before the first assertion.
+ */
+const executedDirectly =
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
+
+if (executedDirectly) {
+  const run = commands[process.argv[2] ?? ''];
+
+  if (!run) {
+    console.error(`usage: npm run <${Object.keys(commands).join('|')}>`);
+    process.exit(1);
+  }
+
+  run().catch((err) => {
+    console.error(err instanceof Error ? err.message : err);
+    process.exit(1);
+  });
 }
-
-run().catch((err) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exit(1);
-});

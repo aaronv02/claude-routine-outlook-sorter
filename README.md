@@ -411,7 +411,24 @@ anything in `src/digest/`. Numbers that look plausible are the failure mode, so 
 states what the week actually contains rather than trusting the output to look
 sensible.
 
-Both found real bugs the first time they ran. See the note at the end of this file.
+**`npm run loop`** is the one that matters most. It runs the actual `plan` and
+`apply` commands against a fake mailbox served over a stubbed `fetch` — so the real
+orchestration, the real `src/graph.ts` with its JSON batching and provenance
+encoding, the real state store writing to a hidden mail folder, and the real
+promotion into native Outlook rules all execute. Four sweeps, with a human
+correcting a label in between, answering the question the whole product rests on:
+
+> Does correcting a label in Outlook, with no other action, eventually teach Outlook
+> itself to do the job?
+
+It asserts that it does — the correction is learned, later mail from that sender
+never reaches the model again, and once confirmed enough times a native
+`Inbox Steward:` rule appears with the right sender and the category *she* chose.
+It intercepts at `fetch` rather than mocking the Graph module on purpose: mocking
+`graph.ts` would skip exactly the parts most likely to be wrong.
+
+All three found real bugs the first time they ran. See the note at the end of this
+file.
 
 ## Tuning it
 
@@ -469,6 +486,7 @@ For the weekly summary:
 | `npm test` | 80 offline checks. No network, no mailbox, no key. |
 | `npm run accuracy <verdicts.json>` | Score sorting against the 50 labelled fixtures. |
 | `npm run scenario` | Run a known fake week through the real digest. |
+| `npm run loop` | The whole sort→correct→learn→promote loop, against a fake mailbox. |
 | `npm run typecheck` | |
 
 The split is the point: deterministic mailbox I/O stays in code, where it's cheap
