@@ -211,10 +211,13 @@ export async function startDeviceCode(): Promise<DeviceCode> {
 export async function pollDeviceCode(code: DeviceCode): Promise<TokenSet> {
   const { clientId } = config();
   const deadline = Date.now() + code.expiresIn * 1000;
+  // Backed off on `slow_down`, per the device-code spec. Polling on at the same
+  // cadence just earns another slow_down and burns the whole window.
+  let intervalSeconds = code.interval;
 
   for (;;) {
     if (Date.now() > deadline) throw new Error('Device code expired before sign-in completed.');
-    await new Promise((r) => setTimeout(r, code.interval * 1000));
+    await new Promise((r) => setTimeout(r, intervalSeconds * 1000));
 
     const { tenant } = config();
     const res = await fetch(`${AUTHORITY}/${tenant}/oauth2/v2.0/token`, {
@@ -243,7 +246,11 @@ export async function pollDeviceCode(code: DeviceCode): Promise<TokenSet> {
     }
 
     // These two are the flow working as designed, not failures.
-    if (body.error === 'authorization_pending' || body.error === 'slow_down') continue;
+    if (body.error === 'slow_down') {
+      intervalSeconds += 5;
+      continue;
+    }
+    if (body.error === 'authorization_pending') continue;
     throw new Error(`Device code sign-in failed: ${body.error ?? res.status}`);
   }
 }

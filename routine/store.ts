@@ -89,10 +89,21 @@ async function ensureFolder(token: string): Promise<string> {
   return created.id;
 }
 
+/**
+ * The one message holding our state.
+ *
+ * Filtered by subject rather than "whatever is newest in the folder". Without the
+ * filter, any other message that ever landed here would be read as state - and
+ * worse, a `$top` window that missed the real one made `saveState` create a SECOND
+ * state message, so every subsequent run wrote to a different one and the mailbox
+ * accumulated state messages while appearing to forget everything.
+ */
 async function findStateMessage(token: string, folderId: string) {
   const body = await graph<{ value: { id: string; body?: { content?: string } }[] }>(
     token,
-    `/me/mailFolders/${folderId}/messages?$top=5&$select=id,body&$orderby=createdDateTime desc`,
+    `/me/mailFolders/${folderId}/messages` +
+      `?$filter=subject eq '${STATE_SUBJECT}'` +
+      `&$top=10&$select=id,body&$orderby=createdDateTime desc`,
   );
   return body.value.find((m) => m.body?.content !== undefined) ?? null;
 }
@@ -134,7 +145,7 @@ export async function loadState(token: string): Promise<RoutineState> {
   if (!message?.body?.content) return migrate(null);
 
   try {
-    return migrate(JSON.parse(stripHtml(message.body.content)));
+    return migrate(JSON.parse(extractJson(message.body.content)));
   } catch {
     // Unparseable state is worse than none only if we act on it. Starting over
     // costs a bootstrap run; acting on half-read state can promote a wrong
@@ -145,24 +156,52 @@ export async function loadState(token: string): Promise<RoutineState> {
 }
 
 /**
- * Graph may hand back a text body wrapped in HTML depending on how it was
- * stored, so unwrap defensively rather than trusting the contentType we asked
- * for on the way in.
+ * Marker prefixing the base64 payload, so an old plain-JSON state message is
+ * still readable after an upgrade.
  */
-function stripHtml(content: string): string {
-  const trimmed = content.trim();
-  if (trimmed.startsWith('{')) return trimmed;
-  return trimmed
+const B64_MARKER = 'INBOX-STEWARD-B64:';
+
+/**
+ * Recover the JSON from a message body.
+ *
+ * Graph does not reliably store a body as the content type it was given - a
+ * `text` body can come back wrapped in HTML with its characters escaped.
+ * Round-tripping raw JSON through that is lossy: `&#39;` and `&nbsp;` are not in
+ * any short unescape list, and a subject like `John <john@x.com>` - entirely
+ * ordinary inside a correction record - is indistinguishable from markup once it
+ * is in the body.
+ *
+ * So new state is written base64-encoded. That alphabet contains no `<`, `>`, `&`
+ * or quotes, which means no amount of HTML mangling can alter it. The plain-JSON
+ * path stays for state written before this change.
+ */
+export function extractJson(content: string): string {
+  const stripped = content
     .replace(/<[^>]+>/g, '')
     .replace(/&quot;/g, '"')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+    .replace(/&nbsp;/g, ' ')
     .trim();
+
+  const marked = stripped.indexOf(B64_MARKER);
+  if (marked !== -1) {
+    // Everything after the marker that is still base64. Whitespace is dropped
+    // because an HTML wrapper is free to insert line breaks anywhere.
+    const payload = stripped.slice(marked + B64_MARKER.length).replace(/\s+/g, '');
+    return Buffer.from(payload, 'base64').toString('utf8');
+  }
+
+  const trimmed = content.trim();
+  return trimmed.startsWith('{') ? trimmed : stripped;
 }
 
 export async function saveState(token: string, state: RoutineState): Promise<void> {
   const json = JSON.stringify(state);
+  // See extractJson: base64 so no HTML round-trip can corrupt it.
+  const encoded = B64_MARKER + Buffer.from(json, 'utf8').toString('base64');
 
   const file = process.env.STEWARD_STATE_FILE;
   if (file) {
@@ -173,7 +212,7 @@ export async function saveState(token: string, state: RoutineState): Promise<voi
 
   const folderId = await ensureFolder(token);
   const existing = await findStateMessage(token, folderId);
-  const body = { subject: STATE_SUBJECT, body: { contentType: 'text', content: json } };
+  const body = { subject: STATE_SUBJECT, body: { contentType: 'text', content: encoded } };
 
   if (existing) {
     await graph(token, `/me/messages/${existing.id}`, {

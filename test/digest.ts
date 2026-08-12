@@ -605,3 +605,55 @@ export async function runDesktopChecks(
     assert(config.mcpServers['outlook-sorter'], 'gave up on an unparseable config');
   });
 }
+
+// ---------------------------------------------------------------------------
+// State encoding
+//
+// State round-trips through a mail message body, and Graph does not reliably
+// store a body as the content type it was given. Corruption here silently resets
+// everything the tool has learned.
+// ---------------------------------------------------------------------------
+
+export async function runStateChecks(check: Check, assert: Assert): Promise<void> {
+  const { extractJson } = await import('../routine/store.js');
+  const MARKER = 'INBOX-STEWARD-B64:';
+  const encode = (value: unknown) =>
+    MARKER + Buffer.from(JSON.stringify(value), 'utf8').toString('base64');
+
+  check('base64 state survives an HTML wrapper', () => {
+    const state = { senderRules: [{ pattern: 'a@b.org' }] };
+    const wrapped = `<html><head></head><body><div>${encode(state)}</div></body></html>`;
+    assert(
+      JSON.parse(extractJson(wrapped)).senderRules[0].pattern === 'a@b.org',
+      'lost state inside an HTML body',
+    );
+  });
+
+  check('base64 state survives line breaks injected into the body', () => {
+    // An HTML wrapper is free to break lines anywhere, including mid-payload.
+    const raw = encode({ ok: true });
+    const split = `${raw.slice(0, 20)}\n   ${raw.slice(20)}`;
+    assert(JSON.parse(extractJson(split)).ok === true, 'line breaks broke the payload');
+  });
+
+  check('a correction containing angle brackets round-trips intact', () => {
+    // This is the case that defeated the old unescape approach: a subject like
+    // "John <john@x.com>" is indistinguishable from markup once it is in a body.
+    const state = { recentCorrections: [{ subject: 'Re: John <john@x.com> asked', sender: 'a@b.org' }] };
+    const recovered = JSON.parse(extractJson(encode(state)));
+    assert(
+      recovered.recentCorrections[0].subject === 'Re: John <john@x.com> asked',
+      `mangled to: ${recovered.recentCorrections[0].subject}`,
+    );
+  });
+
+  check('plain JSON written before base64 is still readable', () => {
+    const recovered = JSON.parse(extractJson('{"version":1,"senderRules":[]}'));
+    assert(recovered.version === 1, 'dropped pre-upgrade state');
+  });
+
+  check('an HTML-escaped plain-JSON body is still recovered', () => {
+    const recovered = JSON.parse(extractJson('<div>{&quot;version&quot;:1}</div>'));
+    assert(recovered.version === 1, 'could not unescape legacy state');
+  });
+}

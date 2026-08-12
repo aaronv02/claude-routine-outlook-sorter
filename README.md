@@ -151,12 +151,30 @@ for.
 
 ## Setup
 
+**On the machine that owns the mailbox**, open PowerShell (Windows) and paste:
+
+```
+irm https://raw.githubusercontent.com/aaronv02/claude-routine-outlook-sorter/main/install.ps1 | iex
+```
+
+macOS or Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/aaronv02/claude-routine-outlook-sorter/main/install.sh | bash
+```
+
+That checks Node, downloads the project to `C:\outlook-sorter` (or `~/outlook-sorter`),
+installs its dependencies, and starts the wizard. Nothing else to download and no
+GitHub account needed — the repo is public.
+
+Already have the folder? Just:
+
 ```bash
 npm install
 npm run setup
 ```
 
-That's it. `npm run setup` is a wizard: it walks through the one manual step,
+Either way, that's it. `npm run setup` is a wizard: it walks through the one manual step,
 takes the sign-in, writes its own configuration, prepares the mailbox, and
 finishes by running a real sweep so you can see it working before you schedule
 anything.
@@ -212,6 +230,30 @@ Sorting more often than hourly buys little — promoted senders are already bein
 labelled on arrival by Outlook itself.
 
 Either can be scheduled without the other.
+
+### Three things the installer will not do
+
+Not oversights — each one needs a person:
+
+1. **Install Node.** On a managed laptop that wants an administrator password, and
+   silently installing a runtime on someone's work machine isn't an installer's
+   business. It tells you where to get it and stops.
+2. **Sign in.** The mailbox owner does that herself, in the wizard. That consent is
+   the entire security model.
+3. **Restart Claude Desktop.** The wizard says when; a human quits it from the
+   system tray.
+
+You also can't ask Claude Desktop to do the install for you — it has no terminal,
+and the MCP server that would give it one is what the install creates.
+
+### Where to put it
+
+Somewhere **permanent and not synced**. Claude Desktop stores absolute paths into
+the folder, so moving or deleting it later silently breaks the connection. And on
+Microsoft 365 machines, Documents and Desktop are usually redirected into OneDrive,
+where `node_modules` means thousands of files churning through sync and file-lock
+failures during install. `C:\outlook-sorter` is the default for both reasons; the
+installer warns if you point it somewhere synced.
 
 ### If something goes wrong
 
