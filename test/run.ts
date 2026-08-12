@@ -31,6 +31,7 @@ import {
 import { categoryToApply, gate } from '../src/classify/confidence.js';
 import { detectCorrections, needsClassification } from '../src/engine.js';
 import { mergeCategories } from '../routine/merge.js';
+import { runDigestChecks } from './digest.js';
 
 let passed = 0;
 const failures: string[] = [];
@@ -307,6 +308,12 @@ check('duplicate names are made unique', () => {
   ]);
   assert(fixed[0]?.name !== fixed[1]?.name, 'left two categories sharing one name');
 });
+
+// ---------------------------------------------------------------------------
+// The weekly digest
+// ---------------------------------------------------------------------------
+
+runDigestChecks(check, assert);
 
 // ---------------------------------------------------------------------------
 

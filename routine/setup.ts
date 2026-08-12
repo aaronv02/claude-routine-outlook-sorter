@@ -97,6 +97,7 @@ const GRAPH_APP_ID = '00000003-0000-0000-c000-000000000000';
 const MANIFEST_PERMISSIONS = [
   { name: 'Mail.ReadWrite', id: '024d486e-b451-40bb-833d-3e66d98c5c73' },
   { name: 'MailboxSettings.ReadWrite', id: '818c620a-27a9-40bd-a6a5-d96f7d610b4b' },
+  { name: 'Calendars.Read', id: '465a38f9-76ea-45b9-9f34-9e8b0d4b0b42' },
   { name: 'User.Read', id: 'e1fe6dd8-ba31-4d61-89e7-88639da4683d' },
   { name: 'offline_access', id: '7427e0e9-2fba-42fe-b0c0-848c9e6a8182' },
 ];
@@ -260,7 +261,7 @@ to do this one step. Nothing else here works until the registration exists.
     process.exit(1);
   }
 
-  console.log(green('\n  ✓ Signed in, and all four permissions are present.'));
+  console.log(green(`\n  ✓ Signed in, and all ${REQUIRED_SCOPES.length + 1} permissions are present.`));
 
   await saveEnv({
     STEWARD_CLIENT_ID: clientId,

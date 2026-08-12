@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "A scheduled Claude routine that sorts an Outlook mailbox with Outlook categories, learns from corrections made in Outlook, and promotes confident senders into native Outlook rules.",
+  "description": "Two scheduled Claude routines for an Outlook mailbox: category sorting that promotes itself into native Outlook rules, and an end-of-week summary of what is still waiting on a reply.",
   "license": "MIT",
   "scripts": {
     "setup": "tsx routine/setup.ts",
     "login": "tsx routine/sweep.ts login",
     "plan": "tsx routine/sweep.ts plan",
     "apply": "tsx routine/sweep.ts apply",
+    "weekly": "tsx routine/weekly.ts",
     "test": "tsx test/run.ts",
     "typecheck": "tsc --noEmit"
   },

@@ -5,5 +5,5 @@ node_modules/
 # Written by `npm run setup`. Holds a credential to the mailbox.
 .env
 
-# Holds the refresh token, the plan, and the verdicts. Never commit this.
+# Holds the refresh token, the plan, the verdicts, and the digest. Never commit this.
 routine/.local/

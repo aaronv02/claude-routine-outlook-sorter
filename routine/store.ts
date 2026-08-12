@@ -33,8 +33,23 @@ export interface RoutineState extends PersistedState {
     /** Rotated on every token exchange. See the honesty note in README. */
     refreshToken?: string;
     lastRunAt?: string;
-    /** Rolling tally, for the digest. */
+    /** Rolling tally of sorting sweeps. */
     runs?: number;
+  };
+  /** The weekly digest's own memory. Separate because the two run on different schedules. */
+  weekly?: {
+    /**
+     * ISO week of the last digest produced, e.g. "2026-W33".
+     *
+     * This is what makes a late run report the week it missed instead of a week
+     * that has barely started - and what stops it reporting the same week twice.
+     */
+    lastReportedWeek?: string;
+    lastRunAt?: string;
+    /** Remembered so the reporting window doesn't move if the env var is dropped. */
+    timeZone?: string;
+    /** Role aliases and shared mailboxes she is also reached at. */
+    alsoAddressedAs?: string[];
   };
 }
 
@@ -98,6 +113,8 @@ function migrate(raw: unknown): RoutineState {
     taxonomy: normalizeTaxonomy(parsed.taxonomy?.length ? parsed.taxonomy : base.taxonomy),
     senderRules: parsed.senderRules ?? [],
     recentCorrections: parsed.recentCorrections ?? [],
+    ...(parsed.routine ? { routine: parsed.routine } : {}),
+    ...(parsed.weekly ? { weekly: parsed.weekly } : {}),
   };
 }
 

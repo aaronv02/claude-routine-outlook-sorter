@@ -34,6 +34,10 @@ const AUTHORITY = 'https://login.microsoftonline.com';
 export const REQUIRED_SCOPES = [
   'Mail.ReadWrite',
   'MailboxSettings.ReadWrite',
+  // Read-only, and only the calendar. The weekly digest reports unanswered
+  // invitations and the week ahead; nothing in this project writes an event or
+  // sends an RSVP.
+  'Calendars.Read',
   'User.Read',
 ] as const;
 
