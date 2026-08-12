@@ -1,0 +1,20 @@
+{
+  "name": "claude-routine-outlook-sorter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A scheduled Claude routine that sorts an Outlook mailbox with Outlook categories, learns from corrections made in Outlook, and promotes confident senders into native Outlook rules.",
+  "license": "MIT",
+  "scripts": {
+    "login": "tsx routine/sweep.ts login",
+    "plan": "tsx routine/sweep.ts plan",
+    "apply": "tsx routine/sweep.ts apply",
+    "test": "tsx test/run.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

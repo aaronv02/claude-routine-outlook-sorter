@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+*.log
+
+# Holds the refresh token, the plan, and the verdicts. Never commit this.
+routine/.local/
