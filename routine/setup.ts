@@ -27,6 +27,7 @@ import {
   type TokenSet,
 } from './auth.js';
 import { loadState, saveState } from './store.js';
+import { connectToDesktop } from './desktop.js';
 import { bootstrapSenderRules } from '../src/classify/rules.js';
 import { ensureMasterCategories, listCategorizedHistory, listRecentInbox } from '../src/graph.js';
 import { categoryById } from '../src/taxonomy.js';
@@ -143,7 +144,7 @@ async function main(): Promise<void> {
   }
 
   // -------------------------------------------------------------------------
-  heading(1, 5, 'Register an app so this can reach the mailbox');
+  heading(1, 6, 'Register an app so this can reach the mailbox');
 
   console.log(`This is the only step that isn't automated. Six clicks, about three minutes.
 Everything after it is checked for you, so mistakes here get caught, not inherited.
@@ -188,7 +189,7 @@ to do this one step. Nothing else here works until the registration exists.
 `);
 
   // -------------------------------------------------------------------------
-  heading(2, 5, 'Tell this tool about that app');
+  heading(2, 6, 'Tell this tool about that app');
 
   console.log(`On the app's ${bold('Overview')} page, copy ${bold('Application (client) ID')}.\n`);
 
@@ -215,7 +216,7 @@ to do this one step. Nothing else here works until the registration exists.
   process.env.STEWARD_TENANT = tenant;
 
   // -------------------------------------------------------------------------
-  heading(3, 5, 'The mailbox owner signs in');
+  heading(3, 6, 'The mailbox owner signs in');
 
   console.log('This is the part they do. It creates the key this tool uses from then on.\n');
 
@@ -271,7 +272,7 @@ to do this one step. Nothing else here works until the registration exists.
   console.log(`  ${green('✓')} Saved to ${ENV_PATH} ${dim('(mode 600, gitignored)')}`);
 
   // -------------------------------------------------------------------------
-  heading(4, 5, 'Prepare the mailbox');
+  heading(4, 6, 'Prepare the mailbox');
 
   const state = await loadState(tokens.accessToken);
 
@@ -331,7 +332,7 @@ to do this one step. Nothing else here works until the registration exists.
   console.log(`\n  ${green('✓')} Can read the inbox (${inbox.length} recent message(s) visible).`);
 
   // -------------------------------------------------------------------------
-  heading(5, 5, 'One real sweep, so you can see it work');
+  heading(5, 6, 'One real sweep, so you can see it work');
 
   console.log(
     `This runs ${bold('npm run plan')}: it reads the inbox and works out what it would\nlabel. It writes nothing to the mailbox.\n`,
@@ -344,6 +345,36 @@ to do this one step. Nothing else here works until the registration exists.
     await runPlan();
   }
 
+  // -------------------------------------------------------------------------
+  heading(6, 6, 'Connect it to Claude Desktop (optional)');
+
+  console.log(`The two schedules push reports at her. This adds the other direction: she can
+open Claude and ${bold('ask')} - "who is waiting on me?", "catch me up, I was out
+Tuesday", "what did I tell the board about the audit?"
+
+Only worth doing if Claude Desktop is installed on this machine, since that is
+where it runs.
+`);
+
+  const wantMcp = await rl.question('Connect it to Claude Desktop? [Y/n] ');
+  let connected = false;
+
+  if (!wantMcp.trim().toLowerCase().startsWith('n')) {
+    try {
+      const result = await connectToDesktop();
+      connected = true;
+      console.log(`  ${green('✓')} ${result.replaced ? 'Updated' : 'Added'} the entry in ${result.path}`);
+      if (result.preserved.length > 0) {
+        console.log(dim(`     (your other MCP servers were left alone: ${result.preserved.join(', ')})`));
+      }
+    } catch (err) {
+      console.log(
+        yellow(`\n  Could not write the Claude Desktop config: ${err instanceof Error ? err.message : err}`),
+      );
+      console.log(dim('  Run `npm run connect` later to retry. Everything else is set up.'));
+    }
+  }
+
   finished = true;
   console.log(`
 ${bold('Done.')} What's left:
@@ -351,18 +382,21 @@ ${bold('Done.')} What's left:
   ${bold('1.')} Look at ${bold('routine/.local/plan.json')}. The "pending" list is the mail it wants
      help with. If that looks like real mail, everything works.
 
-  ${bold('2.')} Schedule it. Create a scheduled Claude task with:
+  ${bold('2.')} Schedule the two routines. Both use this folder as their working
+     directory, and both need STEWARD_CLIENT_ID, STEWARD_TENANT and
+     STEWARD_REFRESH_TOKEN in their environment.
+     ${dim('(All three are in .env - copy them into the runner as secrets.)')}
 
-       working directory   this folder
-       prompt              the text in routine/PROMPT.md
-       environment         STEWARD_CLIENT_ID and STEWARD_REFRESH_TOKEN
-                           ${dim('(both are in .env - copy them into the runner as secrets)')}
+       routine/PROMPT.md          sorts mail        hourly, working day
+       routine/PROMPT-WEEKLY.md   weekly summary    Friday mid-afternoon
 
-     Hourly during the working day is the right cadence.
+${connected ? `  ${bold('3.')} ${bold('Fully quit Claude Desktop and reopen it')} so it picks up the new tools.
+     Closing the window is not enough - quit it from the system tray. Then ask
+     Claude "who is waiting on me?" to confirm it can see the mailbox.
 
-  ${bold('3.')} Tell her the only thing she needs to know: ${bold('if a label is wrong, change it in')}
-     ${bold('Outlook the way she normally would.')} It learns from that. There is nothing
-     to open and no button to press.
+  ${bold('4.')}` : `  ${bold('3.')}`} Tell her the only thing she needs to know: ${bold('if a label is wrong, change')}
+     ${bold('it in Outlook the way she normally would.')} It learns from that. There is
+     nothing to open and no button to press.
 
 ${dim('The sign-in expires after 90 days of no runs, or immediately if her password')}
 ${dim('changes. When that happens the routine reports "invalid_grant" - rerun npm run setup.')}

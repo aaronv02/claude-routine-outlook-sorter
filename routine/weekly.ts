@@ -12,6 +12,7 @@
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { loadEnv } from './env.js';
 import { assertConfigured, redeemRefreshToken } from './auth.js';
@@ -33,7 +34,9 @@ import {
   type DigestEvent,
 } from '../src/digest/types.js';
 
-const HERE = dirname(new URL(import.meta.url).pathname);
+// fileURLToPath, not URL.pathname: on Windows the latter yields "/C:/...",
+// which every path built from it then fails to resolve.
+const HERE = dirname(fileURLToPath(import.meta.url));
 const DIGEST_PATH = resolve(HERE, '.local/digest.json');
 
 /**

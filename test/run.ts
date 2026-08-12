@@ -31,7 +31,7 @@ import {
 import { categoryToApply, gate } from '../src/classify/confidence.js';
 import { detectCorrections, needsClassification } from '../src/engine.js';
 import { mergeCategories } from '../routine/merge.js';
-import { runDigestChecks } from './digest.js';
+import { runDigestChecks, runDesktopChecks } from './digest.js';
 
 let passed = 0;
 const failures: string[] = [];
@@ -39,6 +39,15 @@ const failures: string[] = [];
 function check(name: string, fn: () => void): void {
   try {
     fn();
+    passed++;
+  } catch (err) {
+    failures.push(`${name}: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
+async function checkAsync(name: string, fn: () => Promise<void>): Promise<void> {
+  try {
+    await fn();
     passed++;
   } catch (err) {
     failures.push(`${name}: ${err instanceof Error ? err.message : String(err)}`);
@@ -314,6 +323,7 @@ check('duplicate names are made unique', () => {
 // ---------------------------------------------------------------------------
 
 runDigestChecks(check, assert);
+await runDesktopChecks(checkAsync, assert);
 
 // ---------------------------------------------------------------------------
 

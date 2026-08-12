@@ -525,3 +525,83 @@ export function runDigestChecks(check: Check, assert: Assert): void {
     assert(digest.headline === '2 emails are waiting on you', `headline "${digest.headline}"`);
   });
 }
+
+// ---------------------------------------------------------------------------
+// Claude Desktop registration
+//
+// Writing this config means editing a file she may already be using for other
+// MCP servers. Clobbering those to install ours would be invisible until
+// something else stopped working.
+// ---------------------------------------------------------------------------
+
+export async function runDesktopChecks(
+  checkAsync: (name: string, fn: () => Promise<void>) => Promise<void>,
+  assert: Assert,
+): Promise<void> {
+  const { mkdtemp, readFile, writeFile } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+  const { tmpdir } = await import('node:os');
+  const { connectToDesktop, disconnectFromDesktop } = await import('../routine/desktop.js');
+
+  const dir = await mkdtemp(join(tmpdir(), 'sorter-desktop-'));
+  const configFile = join(dir, 'claude_desktop_config.json');
+  const read = async () => JSON.parse(await readFile(configFile, 'utf8'));
+
+  await checkAsync('connect creates a config when none exists', async () => {
+    const result = await connectToDesktop(configFile);
+    assert(!result.replaced, 'claimed to replace an entry in a new file');
+    const config = await read();
+    assert(config.mcpServers['outlook-sorter'], 'did not add our server');
+    assert(
+      Array.isArray(config.mcpServers['outlook-sorter'].args),
+      'entry has no args to launch',
+    );
+  });
+
+  await checkAsync('connect preserves other MCP servers and unrelated keys', async () => {
+    await writeFile(
+      configFile,
+      JSON.stringify({
+        mcpServers: { filesystem: { command: 'other' }, github: { command: 'other' } },
+        globalShortcut: 'Cmd+Shift+Space',
+      }),
+      'utf8',
+    );
+
+    const result = await connectToDesktop(configFile);
+    assert(result.preserved.length === 2, `preserved ${result.preserved.length}, expected 2`);
+
+    const config = await read();
+    assert(config.mcpServers.filesystem?.command === 'other', 'destroyed another server');
+    assert(config.mcpServers.github?.command === 'other', 'destroyed another server');
+    assert(config.globalShortcut === 'Cmd+Shift+Space', 'destroyed an unrelated setting');
+    assert(config.mcpServers['outlook-sorter'], 'did not add ours');
+  });
+
+  await checkAsync('connect twice replaces rather than duplicates', async () => {
+    const result = await connectToDesktop(configFile);
+    assert(result.replaced, 'did not notice our entry was already there');
+    const config = await read();
+    assert(Object.keys(config.mcpServers).length === 3, 'entry count changed unexpectedly');
+  });
+
+  await checkAsync('disconnect removes only our entry', async () => {
+    const result = await disconnectFromDesktop(configFile);
+    assert(result.removed, 'reported nothing removed');
+    const config = await read();
+    assert(!config.mcpServers['outlook-sorter'], 'left our entry behind');
+    assert(config.mcpServers.filesystem, 'removed someone else\'s server');
+  });
+
+  await checkAsync('disconnect on a missing config is not an error', async () => {
+    const result = await disconnectFromDesktop(join(dir, 'nope.json'));
+    assert(!result.removed, 'claimed to remove something from a missing file');
+  });
+
+  await checkAsync('a malformed config is replaced rather than fatal', async () => {
+    await writeFile(configFile, '{ not json', 'utf8');
+    await connectToDesktop(configFile);
+    const config = await read();
+    assert(config.mcpServers['outlook-sorter'], 'gave up on an unparseable config');
+  });
+}

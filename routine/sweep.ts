@@ -21,6 +21,7 @@
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type { Correction, Decision, MailSummary, Suggestion } from '../src/types.js';
 import {
@@ -46,7 +47,9 @@ import { mergeCategories } from './merge.js';
 import { loadState, saveState, type RoutineState } from './store.js';
 import { assertConfigured, pollDeviceCode, redeemRefreshToken, startDeviceCode } from './auth.js';
 
-const HERE = dirname(new URL(import.meta.url).pathname);
+// fileURLToPath, not URL.pathname: on Windows the latter yields "/C:/...",
+// which every path built from it then fails to resolve.
+const HERE = dirname(fileURLToPath(import.meta.url));
 const PLAN_PATH = resolve(HERE, '.local/plan.json');
 const VERDICTS_PATH = resolve(HERE, '.local/verdicts.json');
 

@@ -1,14 +1,20 @@
 # Claude Routine: Outlook Sorter
 
-Two scheduled Claude routines over one Outlook mailbox:
+Three ways into one Outlook mailbox, sharing one sign-in and one state file:
 
-- **The sorter** — labels mail with Outlook **categories**, learns from
-  corrections made in Outlook itself, and then teaches Outlook's own rules to keep
-  doing it without the routine running. Runs hourly.
+- **The sorter** — labels mail with Outlook **categories**, learns from corrections
+  made in Outlook itself, and then teaches Outlook's own rules to keep doing it
+  without the routine running. Scheduled hourly.
 - **The end-of-week summary** — what is still waiting on a reply, what she flagged,
-  what she never opened, unanswered invitations, and the week ahead. Runs Friday.
+  what she never opened, unanswered invitations, and the week ahead. Scheduled
+  Friday.
+- **The MCP server** — the same analysis, on demand, in Claude Desktop. "Who is
+  waiting on me?", "catch me up, I was out Tuesday", "what did I tell the board
+  about the audit?"
 
-They share one sign-in and one state file, and neither needs the other.
+The first two are push: something fires and a report appears. The third is pull,
+for the questions a schedule can't anticipate. Any of them works without the
+others.
 
 Nothing moves and nothing is deleted. Categories are coloured tags, so every
 action is visible in Outlook and reversible by hand.
@@ -109,6 +115,40 @@ No Gemini or OpenAI key. No database. No server. No hosting.
 
 ---
 
+## Asking it things (the MCP server)
+
+The schedules can only answer questions someone thought of in advance. This is the
+other direction: eight tools that let Claude read the live mailbox while she talks
+to it.
+
+| Tool | For |
+|---|---|
+| `whats_waiting` | "who is waiting on me?", "anything I've left hanging more than a week?" |
+| `weekly_summary` | "how was my week?", "catch me up, I was out Tuesday and Wednesday" |
+| `whats_next_week` | "what's coming up?", "any meetings I haven't responded to?" |
+| `find_mail` | "anything from Tessa this month?", "what did I tell the board about the audit?" |
+| `read_message` | The full text of one message, by reference |
+| `list_categories` | The labels and what belongs in each |
+| `suggest_labels` | Proposes labels for unlabelled mail. **Reads only.** |
+| `apply_labels` | Writes labels — only after she has seen and agreed to them |
+
+Results carry short references (`m1`, `m2`) rather than Graph's 150-character ids,
+so she can say "read m3" and it resolves.
+
+**The two write tools are deliberately split.** `suggest_labels` changes nothing,
+and its description instructs Claude to show her the proposals and never call
+`apply_labels` in the same turn. So the conversational path has an approval step
+the schedule cannot have — and because she approved each one explicitly, those
+labels count as confirmations toward a sender earning a native Outlook rule.
+Promotion itself is left to the scheduled sweep: writing a permanent mailbox rule
+as a side effect of a chat message is more than she agreed to.
+
+It runs on her machine, launched by Claude Desktop over stdio, and only while
+Claude is open. Nothing happens while she's away — that's what the schedules are
+for.
+
+---
+
 ## Setup
 
 ```bash
@@ -138,10 +178,23 @@ What it does, in order:
    it found.
 5. **Run one sweep** — reads the inbox and writes `routine/.local/plan.json`
    showing what it would label. Nothing is written to the mailbox in this step.
+6. **Connect to Claude Desktop** — optional, and only useful on the machine where
+   Claude Desktop is installed. Adds one entry to its config and leaves any other
+   MCP servers alone.
 
 Every step verifies itself. A missing permission, a registration made as the wrong
 platform, a tenant that blocks app creation — each is caught while you're still
 sitting there, and named in words that say what to do about it.
+
+### Then connect and schedule
+
+Step 6 of the wizard offers to register the MCP server with Claude Desktop. After
+it does, **fully quit Claude Desktop and reopen it** — closing the window is not
+enough; quit it from the system tray. Then ask Claude *"who is waiting on me?"* to
+confirm it can see the mailbox.
+
+You can do this later instead with `npm run connect`, and undo it with
+`npm run disconnect`.
 
 ### Then schedule them
 
@@ -296,7 +349,10 @@ For the weekly summary:
 | `npm run plan` | Learn corrections, run sender rules, write `plan.json`. |
 | `npm run apply` | Gate the verdicts, write categories, promote senders. |
 | `npm run weekly` | Read the week and write `digest.json`. Touches nothing. |
-| `npm test` | 64 offline checks. No network, no mailbox, no key. |
+| `npm run connect` | Register the MCP server with Claude Desktop. |
+| `npm run disconnect` | Remove it again. Leaves other MCP servers alone. |
+| `npm run mcp` | Run the MCP server by hand. Claude Desktop normally does this. |
+| `npm test` | 70 offline checks. No network, no mailbox, no key. |
 | `npm run typecheck` | |
 
 The split is the point: deterministic mailbox I/O stays in code, where it's cheap
@@ -306,6 +362,9 @@ and repeatable. Claude is asked to do only the part that actually needs a model.
 
 ## Known limits
 
+- **The MCP server needs Claude Desktop open**, on the machine it was installed on,
+  and a full quit-and-reopen after connecting — closing the window is not enough.
+  It cannot be reached from a phone or from claude.ai.
 - **The weekly summary can only see Outlook.** Phone calls, site visits, hallway
   conversations, and work done in any other system are invisible to it. It reports
   activity, not accomplishment, and it should never be read as a performance
@@ -344,6 +403,7 @@ taxonomy, the gate, the sender rules, and the promotion logic.
 |---|---|---|
 | Sorts new mail unattended | Only once a sender is promoted | Yes, every sweep |
 | End-of-week summary | No | Yes |
+| Ask questions in Claude | No | Yes, via the MCP server |
 | Stored credential | None at all | A 90-day refresh token |
 | UI in Outlook | Full taskpane | Labels only |
 | Edit categories in-app | Yes | No — edit the source |

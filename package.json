@@ -11,6 +11,9 @@
     "plan": "tsx routine/sweep.ts plan",
     "apply": "tsx routine/sweep.ts apply",
     "weekly": "tsx routine/weekly.ts",
+    "mcp": "tsx routine/mcp.ts",
+    "connect": "tsx routine/connect.ts",
+    "disconnect": "tsx routine/connect.ts disconnect",
     "test": "tsx test/run.ts",
     "typecheck": "tsc --noEmit"
   },

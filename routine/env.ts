@@ -1,5 +1,6 @@
 import { readFile, writeFile, chmod } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Configuration from a `.env` file, so nobody has to remember to `export`
@@ -14,7 +15,9 @@ import { dirname, resolve } from 'node:path';
  * store rather than a file on disk.
  */
 
-const HERE = dirname(new URL(import.meta.url).pathname);
+// fileURLToPath, not URL.pathname: on Windows the latter yields "/C:/...",
+// which every path built from it then fails to resolve.
+const HERE = dirname(fileURLToPath(import.meta.url));
 export const ENV_PATH = resolve(HERE, '../.env');
 
 export async function loadEnv(): Promise<void> {
