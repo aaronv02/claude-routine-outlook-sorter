@@ -383,6 +383,36 @@ mailbox.
 
 ---
 
+## Does it work?
+
+Two harnesses, both offline, neither needing a mailbox.
+
+**`npm run accuracy`** scores model verdicts against 50 labelled fixture emails
+written for this foundation — real program names, real fund names, the kinds of
+message that actually arrive. It runs them through the *real* confidence gate, so it
+measures what would land on the messages, and reports three numbers: top-1 (the
+label it would write), top-3 (the right answer was offered), and **how often it is
+confidently wrong**, which is the one that matters most. A wrong label teaches her
+the tool can't be trusted; an honest ⚠ Needs Review costs her a moment.
+
+`test/fixtures/verdicts-reference.json` is one recorded run: 50/50 top-1, zero
+confidently wrong. **Treat that as a floor, not a forecast.** The fixtures were
+written as clear exemplars of these categories, and real mail is messier —
+forwarded threads, three-word subjects, one message covering two topics, people who
+are a donor and a board member at once. The honest expectation on live mail is the
+80% top-1 / 90% top-3 the published benchmarks suggest. If you want a real number,
+run a week of her actual mail through `npm run plan` and check the labels by hand.
+
+**`npm run scenario`** builds a fake week whose facts are known — a thread she never
+answered, one she did, mail she was only CC'd on, a person at `goodnews@` who must
+not be mistaken for bulk, a declined meeting, an all-day out-of-office marker — and
+asserts the digest reaches the right conclusion about each. Run it after touching
+anything in `src/digest/`. Numbers that look plausible are the failure mode, so it
+states what the week actually contains rather than trusting the output to look
+sensible.
+
+Both found real bugs the first time they ran. See the note at the end of this file.
+
 ## Tuning it
 
 Almost all the accuracy lives in the **category descriptions** in
@@ -437,6 +467,8 @@ For the weekly summary:
 | `npm run disconnect` | Remove it again. Leaves other MCP servers alone. |
 | `npm run mcp` | Run the MCP server by hand. Claude Desktop normally does this. |
 | `npm test` | 80 offline checks. No network, no mailbox, no key. |
+| `npm run accuracy <verdicts.json>` | Score sorting against the 50 labelled fixtures. |
+| `npm run scenario` | Run a known fake week through the real digest. |
 | `npm run typecheck` | |
 
 The split is the point: deterministic mailbox I/O stays in code, where it's cheap
@@ -499,6 +531,27 @@ taxonomy, the gate, the sender rules, and the promotion logic.
 **Run one or the other, not both.** They share the provenance stamp on each
 message, so corrections stay detectable either way, but they keep separate sender
 rules and would both try to write `Inbox Steward:` rules.
+
+## Two bugs these tests found
+
+Worth recording, because both were invisible and both would have quietly degraded
+the thing she relies on.
+
+**Two categories claimed the same mail.** The Events description listed "Tips &
+Tricks or Year-End Ask workshop sessions" while Nonprofit Partners claimed
+"professional development workshop registration and questions". A nonprofit
+registering for Tips & Tricks matched both, the confidence split near-evenly, and
+the gate correctly refused to guess — so it landed in ⚠ Needs Review every time,
+forever, with no way to tell from the outside that the *taxonomy* was at fault
+rather than the model. Events now owns arranging the room; Partners owns registering
+for it, and each says so explicitly.
+
+**A webinar invitation appeared as "waiting on a reply".** `webinars@candid.org`
+wasn't in the ignored-sender list, so a Candid webinar promotion was reported as
+something a human was waiting on her to answer. Exactly the kind of false positive
+that gets a nag list ignored inside two weeks. Added, along with `webinar@`,
+`invitations@`, and `events-noreply@` — while deliberately still leaving `info@` and
+`events@` alone, since at a small nonprofit those are usually a person.
 
 ## License
 

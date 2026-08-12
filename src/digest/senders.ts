@@ -36,6 +36,12 @@ export const DEFAULT_IGNORED_SENDERS = [
   'update@',
   'bulletin@',
   'digest@',
+  // Found by test/scenario.ts, where a Candid webinar invitation surfaced as
+  // "waiting on a reply". Nobody at webinars@ is waiting to hear back.
+  'webinars@',
+  'webinar@',
+  'events-noreply@',
+  'invitations@',
   'announcements@',
   'announce@',
   'marketing@',

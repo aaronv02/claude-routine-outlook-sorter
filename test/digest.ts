@@ -174,6 +174,8 @@ export function runDigestChecks(check: Check, assert: Assert): void {
       'newsletter@foundation.org',
       'someone@mailchimp.com',
       'bounces-1234@example.org',
+      'webinars@candid.org',
+      'invitations@example.org',
     ]) {
       assert(
         isAutomatedSender(address, DEFAULT_IGNORED_SENDERS),

@@ -59,14 +59,14 @@ export const SEED_TAXONOMY: Category[] = [
     name: 'Events',
     color: 'Preset5',
     description:
-      'Logistics for the foundation\'s fundraising and community events: Durango Wine Experience, Hoedown at the Mancos Opera House, 19th Hole Concerts, Payroll Department\'s Pitch Palooza, Making a Difference Speaker Series, and Tips & Tricks or Year-End Ask workshop sessions. Includes sponsors and sponsorship packets, venues, caterers, ticketing, auction items, volunteers, and run-of-show. Event sponsorship solicitation is Events, not Donors & Gifts.',
+      'Logistics for the foundation\'s fundraising and community events: Durango Wine Experience, Hoedown at the Mancos Opera House, 19th Hole Concerts, Payroll Department\'s Pitch Palooza, and the Making a Difference Speaker Series. Includes sponsors and sponsorship packets, venues, caterers, ticketing, auction items, volunteers, and run-of-show. Event sponsorship solicitation is Events, not Donors & Gifts. Distinguish from Nonprofit Partners: arranging the room, catering, or run-of-show for a training session is Events, whereas a nonprofit registering for one or asking about it is Nonprofit Partners.',
   },
   {
     id: 'partners',
     name: 'Nonprofit Partners',
     color: 'Preset6',
     description:
-      'The regional nonprofit sector the foundation serves, in a non-funding capacity. Fiscal sponsorship arrangements, professional development workshop registration and questions, agency fund holders, capacity-building requests, collaboration and referral, and the CAUSE Youth Internship and DWE Nonprofit Partners programs. If they are asking for grant money it is Grants; if they are asking for help, training, or partnership it is here.',
+      'The regional nonprofit sector the foundation serves, in a non-funding capacity. Fiscal sponsorship arrangements, registration for and questions about professional development sessions including Tips & Tricks and the Year-End Ask, agency fund holders asking about their fund\'s distributions or spending policy, capacity-building requests, collaboration and referral, and the CAUSE Youth Internship and DWE Nonprofit Partners programs. If they are asking for grant money it is Grants; if they are asking for help, training, or partnership it is here.',
   },
   {
     id: 'press',

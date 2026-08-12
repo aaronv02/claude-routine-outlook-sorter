@@ -17,7 +17,9 @@
     "connect": "tsx routine/connect.ts",
     "disconnect": "tsx routine/connect.ts disconnect",
     "test": "tsx test/run.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "accuracy": "tsx test/accuracy.ts",
+    "scenario": "tsx test/scenario.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",

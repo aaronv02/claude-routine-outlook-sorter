@@ -1,0 +1,1004 @@
+{
+ "verdicts": [
+  {
+   "ref": 0,
+   "ranked": [
+    {
+     "category": "donors",
+     "confidence": 0.95,
+     "reason": "Adding to a donor advised fund"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.03,
+     "reason": "Mentions stock transfer mechanics"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 1,
+   "ranked": [
+    {
+     "category": "donors",
+     "confidence": 0.93,
+     "reason": "Establishing a memorial fund"
+    },
+    {
+     "category": "scholarships",
+     "confidence": 0.04,
+     "reason": "Literacy work could fund students"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.02,
+     "reason": "Fund type question"
+    }
+   ]
+  },
+  {
+   "ref": 2,
+   "ranked": [
+    {
+     "category": "donors",
+     "confidence": 0.9,
+     "reason": "QCD gift needing acknowledgement"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.07,
+     "reason": "Confirming funds arrived"
+    },
+    {
+     "category": "board",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 3,
+   "ranked": [
+    {
+     "category": "donors",
+     "confidence": 0.88,
+     "reason": "Bequest naming the Foundation"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.05,
+     "reason": "Estate proceeds"
+    },
+    {
+     "category": "scholarships",
+     "confidence": 0.04,
+     "reason": "Proceeds purpose unstated"
+    }
+   ]
+  },
+  {
+   "ref": 4,
+   "ranked": [
+    {
+     "category": "donors",
+     "confidence": 0.78,
+     "reason": "Giving circle directing a pooled gift"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.12,
+     "reason": "Group coordinating with Foundation"
+    },
+    {
+     "category": "events",
+     "confidence": 0.03,
+     "reason": "Members voted at a gathering"
+    }
+   ]
+  },
+  {
+   "ref": 5,
+   "ranked": [
+    {
+     "category": "grants",
+     "confidence": 0.96,
+     "reason": "Letter of inquiry requesting funds"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Nonprofit sender"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.01,
+     "reason": "Budget attached"
+    }
+   ]
+  },
+  {
+   "ref": 6,
+   "ranked": [
+    {
+     "category": "grants",
+     "confidence": 0.96,
+     "reason": "LAUNCH Fund application with request"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Nonprofit sender"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.01,
+     "reason": "Budget template"
+    }
+   ]
+  },
+  {
+   "ref": 7,
+   "ranked": [
+    {
+     "category": "grants",
+     "confidence": 0.94,
+     "reason": "Final report on a grant award"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.04,
+     "reason": "Financial reconciliation included"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "Nonprofit sender"
+    }
+   ]
+  },
+  {
+   "ref": 8,
+   "ranked": [
+    {
+     "category": "grants",
+     "confidence": 0.92,
+     "reason": "Appealing a declined request"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.05,
+     "reason": "Capacity discussion"
+    },
+    {
+     "category": "board",
+     "confidence": 0.01,
+     "reason": "Committee mentioned"
+    }
+   ]
+  },
+  {
+   "ref": 9,
+   "ranked": [
+    {
+     "category": "grants",
+     "confidence": 0.9,
+     "reason": "Emergency Relief Fund request"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.05,
+     "reason": "Nonprofit asking for help"
+    },
+    {
+     "category": "press",
+     "confidence": 0.02,
+     "reason": "Community incident"
+    }
+   ]
+  },
+  {
+   "ref": 10,
+   "ranked": [
+    {
+     "category": "scholarships",
+     "confidence": 0.96,
+     "reason": "Student applicant asking about deadline"
+    },
+    {
+     "category": "grants",
+     "confidence": 0.02,
+     "reason": "Application deadline"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 11,
+   "ranked": [
+    {
+     "category": "scholarships",
+     "confidence": 0.95,
+     "reason": "Recommendation letter for an applicant"
+    },
+    {
+     "category": "grants",
+     "confidence": 0.02,
+     "reason": "Supporting attachment"
+    },
+    {
+     "category": "board",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 12,
+   "ranked": [
+    {
+     "category": "scholarships",
+     "confidence": 0.85,
+     "reason": "Scholarship review committee scheduling"
+    },
+    {
+     "category": "board",
+     "confidence": 0.1,
+     "reason": "Committee meeting logistics"
+    },
+    {
+     "category": "events",
+     "confidence": 0.02,
+     "reason": "Meeting date"
+    }
+   ]
+  },
+  {
+   "ref": 13,
+   "ranked": [
+    {
+     "category": "scholarships",
+     "confidence": 0.93,
+     "reason": "Enrollment verification for disbursement"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.05,
+     "reason": "Disbursement mechanics"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "School sender"
+    }
+   ]
+  },
+  {
+   "ref": 14,
+   "ranked": [
+    {
+     "category": "scholarships",
+     "confidence": 0.82,
+     "reason": "Named scholarship donor asking about recipient"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.14,
+     "reason": "Family behind the fund"
+    },
+    {
+     "category": "events",
+     "confidence": 0.03,
+     "reason": "Awards ceremony mentioned"
+    }
+   ]
+  },
+  {
+   "ref": 15,
+   "ranked": [
+    {
+     "category": "board",
+     "confidence": 0.96,
+     "reason": "Board packet, agenda and minutes"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.03,
+     "reason": "Finance committee report inside"
+    },
+    {
+     "category": "events",
+     "confidence": 0.01,
+     "reason": "Meeting date"
+    }
+   ]
+  },
+  {
+   "ref": 16,
+   "ranked": [
+    {
+     "category": "board",
+     "confidence": 0.94,
+     "reason": "Resigning from governance committee"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Personal move"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.02,
+     "reason": "Board member sender"
+    }
+   ]
+  },
+  {
+   "ref": 17,
+   "ranked": [
+    {
+     "category": "board",
+     "confidence": 0.9,
+     "reason": "Conflict of interest disclosure signed"
+    },
+    {
+     "category": "events",
+     "confidence": 0.05,
+     "reason": "Opera House bid referenced"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.03,
+     "reason": "Vendor bid"
+    }
+   ]
+  },
+  {
+   "ref": 18,
+   "ranked": [
+    {
+     "category": "board",
+     "confidence": 0.94,
+     "reason": "Executive session and strategic plan"
+    },
+    {
+     "category": "events",
+     "confidence": 0.03,
+     "reason": "Retreat logistics"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 19,
+   "ranked": [
+    {
+     "category": "board",
+     "confidence": 0.95,
+     "reason": "Nominating committee, board recruitment"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Candidate bios"
+    },
+    {
+     "category": "press",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 20,
+   "ranked": [
+    {
+     "category": "finance",
+     "confidence": 0.95,
+     "reason": "Quarterly custodian investment statement"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.02,
+     "reason": "Charitable platform sender"
+    },
+    {
+     "category": "board",
+     "confidence": 0.02,
+     "reason": "Investment reporting"
+    }
+   ]
+  },
+  {
+   "ref": 21,
+   "ranked": [
+    {
+     "category": "finance",
+     "confidence": 0.92,
+     "reason": "Giving platform disbursement report"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.06,
+     "reason": "Concerns donor gifts"
+    },
+    {
+     "category": "vendors",
+     "confidence": 0.01,
+     "reason": "Automated sender"
+    }
+   ]
+  },
+  {
+   "ref": 22,
+   "ranked": [
+    {
+     "category": "finance",
+     "confidence": 0.88,
+     "reason": "990 preparation with CPA"
+    },
+    {
+     "category": "grants",
+     "confidence": 0.09,
+     "reason": "Needs grants paid schedule"
+    },
+    {
+     "category": "board",
+     "confidence": 0.02,
+     "reason": "Audit adjacency"
+    }
+   ]
+  },
+  {
+   "ref": 23,
+   "ranked": [
+    {
+     "category": "finance",
+     "confidence": 0.84,
+     "reason": "Past due invoice for payment"
+    },
+    {
+     "category": "vendors",
+     "confidence": 0.12,
+     "reason": "Media vendor account"
+    },
+    {
+     "category": "press",
+     "confidence": 0.02,
+     "reason": "Advertising placements"
+    }
+   ]
+  },
+  {
+   "ref": 24,
+   "ranked": [
+    {
+     "category": "finance",
+     "confidence": 0.93,
+     "reason": "Bank wire transfer confirmation"
+    },
+    {
+     "category": "vendors",
+     "confidence": 0.03,
+     "reason": "Automated bank alert"
+    },
+    {
+     "category": "board",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 25,
+   "ranked": [
+    {
+     "category": "events",
+     "confidence": 0.96,
+     "reason": "Wine Experience layout and volunteers"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Volunteer recruitment"
+    },
+    {
+     "category": "vendors",
+     "confidence": 0.01,
+     "reason": "Vendor count"
+    }
+   ]
+  },
+  {
+   "ref": 26,
+   "ranked": [
+    {
+     "category": "events",
+     "confidence": 0.95,
+     "reason": "Hoedown venue contract and load-in"
+    },
+    {
+     "category": "vendors",
+     "confidence": 0.03,
+     "reason": "Venue agreement"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.01,
+     "reason": "Contract signing"
+    }
+   ]
+  },
+  {
+   "ref": 27,
+   "ranked": [
+    {
+     "category": "events",
+     "confidence": 0.88,
+     "reason": "Event sponsorship at presenting level"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.09,
+     "reason": "Business giving money"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.01,
+     "reason": "Sponsorship payment"
+    }
+   ]
+  },
+  {
+   "ref": 28,
+   "ranked": [
+    {
+     "category": "events",
+     "confidence": 0.94,
+     "reason": "Caterer headcount for Speaker Series"
+    },
+    {
+     "category": "vendors",
+     "confidence": 0.04,
+     "reason": "Caterer vendor"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 29,
+   "ranked": [
+    {
+     "category": "events",
+     "confidence": 0.94,
+     "reason": "19th Hole Concerts staging and permits"
+    },
+    {
+     "category": "vendors",
+     "confidence": 0.03,
+     "reason": "Venue logistics"
+    },
+    {
+     "category": "press",
+     "confidence": 0.01,
+     "reason": "Noise permit"
+    }
+   ]
+  },
+  {
+   "ref": 30,
+   "ranked": [
+    {
+     "category": "partners",
+     "confidence": 0.92,
+     "reason": "Fiscal sponsorship request, not funding"
+    },
+    {
+     "category": "grants",
+     "confidence": 0.05,
+     "reason": "New group seeking support"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 31,
+   "ranked": [
+    {
+     "category": "partners",
+     "confidence": 0.9,
+     "reason": "Nonprofit registering for a training session"
+    },
+    {
+     "category": "events",
+     "confidence": 0.04,
+     "reason": "Session logistics"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.03,
+     "reason": "Donor retention topic"
+    }
+   ]
+  },
+  {
+   "ref": 32,
+   "ranked": [
+    {
+     "category": "partners",
+     "confidence": 0.9,
+     "reason": "Capacity advice, explicitly not money"
+    },
+    {
+     "category": "grants",
+     "confidence": 0.04,
+     "reason": "Nonprofit sender"
+    },
+    {
+     "category": "board",
+     "confidence": 0.03,
+     "reason": "Merger governance"
+    }
+   ]
+  },
+  {
+   "ref": 33,
+   "ranked": [
+    {
+     "category": "partners",
+     "confidence": 0.85,
+     "reason": "CAUSE internship host site agreements"
+    },
+    {
+     "category": "scholarships",
+     "confidence": 0.07,
+     "reason": "Youth program"
+    },
+    {
+     "category": "board",
+     "confidence": 0.02,
+     "reason": "Agreements to sign"
+    }
+   ]
+  },
+  {
+   "ref": 34,
+   "ranked": [
+    {
+     "category": "partners",
+     "confidence": 0.85,
+     "reason": "Agency fund holder asking about distributions"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.09,
+     "reason": "Distribution rate mechanics"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.04,
+     "reason": "Fund draw request"
+    }
+   ]
+  },
+  {
+   "ref": 35,
+   "ranked": [
+    {
+     "category": "press",
+     "confidence": 0.95,
+     "reason": "Reporter requesting an interview"
+    },
+    {
+     "category": "sector",
+     "confidence": 0.02,
+     "reason": "Regional giving trends"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 36,
+   "ranked": [
+    {
+     "category": "press",
+     "confidence": 0.94,
+     "reason": "Podcast invitation"
+    },
+    {
+     "category": "sector",
+     "confidence": 0.03,
+     "reason": "Philanthropy discussion"
+    },
+    {
+     "category": "events",
+     "confidence": 0.02,
+     "reason": "Recording schedule"
+    }
+   ]
+  },
+  {
+   "ref": 37,
+   "ranked": [
+    {
+     "category": "press",
+     "confidence": 0.88,
+     "reason": "Community award nomination"
+    },
+    {
+     "category": "events",
+     "confidence": 0.08,
+     "reason": "Recognition luncheon"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Chamber sender"
+    }
+   ]
+  },
+  {
+   "ref": 38,
+   "ranked": [
+    {
+     "category": "press",
+     "confidence": 0.85,
+     "reason": "Speaking invitation at community forum"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.08,
+     "reason": "Nonprofit convening"
+    },
+    {
+     "category": "events",
+     "confidence": 0.05,
+     "reason": "Panel logistics"
+    }
+   ]
+  },
+  {
+   "ref": 39,
+   "ranked": [
+    {
+     "category": "press",
+     "confidence": 0.9,
+     "reason": "Editor fact checking before print"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.05,
+     "reason": "Grant totals cited"
+    },
+    {
+     "category": "grants",
+     "confidence": 0.04,
+     "reason": "Grant figures"
+    }
+   ]
+  },
+  {
+   "ref": 40,
+   "ranked": [
+    {
+     "category": "sector",
+     "confidence": 0.96,
+     "reason": "Council on Foundations bulletin"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.02,
+     "reason": "DAF regulations mentioned"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 41,
+   "ranked": [
+    {
+     "category": "sector",
+     "confidence": 0.92,
+     "reason": "Association legislative newsletter"
+    },
+    {
+     "category": "board",
+     "confidence": 0.04,
+     "reason": "Reporting requirements"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Sector association"
+    }
+   ]
+  },
+  {
+   "ref": 42,
+   "ranked": [
+    {
+     "category": "sector",
+     "confidence": 0.95,
+     "reason": "Chronicle of Philanthropy ranking"
+    },
+    {
+     "category": "donors",
+     "confidence": 0.02,
+     "reason": "Fundraising rankings"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 43,
+   "ranked": [
+    {
+     "category": "sector",
+     "confidence": 0.94,
+     "reason": "Candid webinar promotion"
+    },
+    {
+     "category": "grants",
+     "confidence": 0.03,
+     "reason": "Grant reporting topic"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Training offer"
+    }
+   ]
+  },
+  {
+   "ref": 44,
+   "ranked": [
+    {
+     "category": "sector",
+     "confidence": 0.9,
+     "reason": "Statewide funders convening announcement"
+    },
+    {
+     "category": "events",
+     "confidence": 0.06,
+     "reason": "Save the date"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.02,
+     "reason": "Membership sender"
+    }
+   ]
+  },
+  {
+   "ref": 45,
+   "ranked": [
+    {
+     "category": "vendors",
+     "confidence": 0.8,
+     "reason": "Microsoft 365 subscription renewal"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.16,
+     "reason": "Card will be charged"
+    },
+    {
+     "category": "board",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 46,
+   "ranked": [
+    {
+     "category": "vendors",
+     "confidence": 0.94,
+     "reason": "Software maintenance notification"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.02,
+     "reason": "Database is financial"
+    },
+    {
+     "category": "partners",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 47,
+   "ranked": [
+    {
+     "category": "vendors",
+     "confidence": 0.86,
+     "reason": "IT workstation replacement quote"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.11,
+     "reason": "Purchase quote"
+    },
+    {
+     "category": "board",
+     "confidence": 0.01,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 48,
+   "ranked": [
+    {
+     "category": "vendors",
+     "confidence": 0.92,
+     "reason": "Landlord facilities notice"
+    },
+    {
+     "category": "events",
+     "confidence": 0.03,
+     "reason": "Access dates"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.02,
+     "reason": "Unrelated"
+    }
+   ]
+  },
+  {
+   "ref": 49,
+   "ranked": [
+    {
+     "category": "vendors",
+     "confidence": 0.93,
+     "reason": "Zoom storage limit notification"
+    },
+    {
+     "category": "finance",
+     "confidence": 0.03,
+     "reason": "Upgrade option"
+    },
+    {
+     "category": "press",
+     "confidence": 0.01,
+     "reason": "Recordings"
+    }
+   ]
+  }
+ ]
+}
