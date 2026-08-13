@@ -427,8 +427,8 @@ never reaches the model again, and once confirmed enough times a native
 It intercepts at `fetch` rather than mocking the Graph module on purpose: mocking
 `graph.ts` would skip exactly the parts most likely to be wrong.
 
-All three found real bugs the first time they ran. See the note at the end of this
-file.
+All three found real bugs the first time they ran, and a fourth came out of auditing
+a real inbox. See the notes at the end of this file.
 
 ## Tuning it
 
@@ -483,7 +483,7 @@ For the weekly summary:
 | `npm run connect` | Register the MCP server with Claude Desktop. |
 | `npm run disconnect` | Remove it again. Leaves other MCP servers alone. |
 | `npm run mcp` | Run the MCP server by hand. Claude Desktop normally does this. |
-| `npm test` | 80 offline checks. No network, no mailbox, no key. |
+| `npm test` | 84 offline checks. No network, no mailbox, no key. |
 | `npm run accuracy <verdicts.json>` | Score sorting against the 50 labelled fixtures. |
 | `npm run scenario` | Run a known fake week through the real digest. |
 | `npm run loop` | The whole sort→correct→learn→promote loop, against a fake mailbox. |
@@ -573,6 +573,33 @@ only the real thing can settle, in rough order of how likely they are to bite:
    says so at that step.
 
 `npm run plan` is the five-minute version of all of it, and it writes nothing.
+
+## What a real inbox taught it
+
+The synthetic tests above are written by the same person who wrote the code, which
+limits what they can find. So the sender filter was also audited against a real
+60-day inbox — 45 distinct senders, metadata only.
+
+It caught **13 of 45**. Precision was perfect: all three actual humans in that inbox
+were correctly left alone. But recall was 31%, and every missed bulk sender is a line
+in the "waiting on a reply" list, which is exactly how that list stops being read.
+
+The cause was a pattern no invented fixture had: **the local part is now the brand,
+and the sending platform is in a subdomain.** `venmo@email.venmo.com`,
+`news@em.oakley.com`, `ebay@reply.ebay.com`, `offers@promos.discounttire.com`,
+`alerts@notify.wellsfargo.com`, `Microsoft365@infomails.microsoft.com`. Anchoring on
+the local part cannot see any of it.
+
+Adding a bulk-subdomain rule took it to **25 of 45**, with all three humans still
+untouched. It stops there deliberately: `mail`, `email`, `e`, `m`, `t`, `my`, `go`,
+`service` and `communication` were all present in that inbox as marketing
+subdomains, and are all excluded from the rule anyway — `mail.some-university.edu`
+is a real shape for a real person, and dropping one person from the waiting list is
+worse than leaving several newsletters in it.
+
+The remaining misses are consumer retail mail, which barely features in a foundation
+mailbox. If some sender does keep appearing, add it to `STEWARD_IGNORED_SENDERS`
+rather than waiting for the defaults to improve.
 
 ## Two bugs these tests found
 

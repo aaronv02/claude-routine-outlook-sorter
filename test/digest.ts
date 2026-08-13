@@ -184,6 +184,63 @@ export function runDigestChecks(check: Check, assert: Assert): void {
     }
   });
 
+  check('bulk sending subdomains are recognized', () => {
+    // From a real 60-day inbox audit. The local part is the brand and the sending
+    // platform is in the subdomain, which the local-part patterns alone all miss.
+    for (const address of [
+      'news@em.oakley.com',
+      'ebay@reply.ebay.com',
+      'offers@promos.discounttire.com',
+      'alerts@notify.wellsfargo.com',
+      'marketing@engage.canva.com',
+      'Microsoft365@infomails.microsoft.com',
+      'wellsfargoonline@mail1.wellsfargo.com',
+      'darkne_ju2249sgzx@members.ebay.com',
+      'no-reply@messaging.peacocktv.com',
+    ]) {
+      assert(
+        isAutomatedSender(address, DEFAULT_IGNORED_SENDERS),
+        `missed bulk sending domain ${address}`,
+      );
+    }
+  });
+
+  check('a noreply suffix is caught, not just a prefix', () => {
+    // googleone-noreply@google.com, from the same audit.
+    assert(
+      isAutomatedSender('googleone-noreply@google.com', DEFAULT_IGNORED_SENDERS),
+      'missed a -noreply suffix',
+    );
+  });
+
+  check('generic subdomains that carry human mail are left alone', () => {
+    // The dangerous direction. A university or company routing real people through
+    // mail./email. must not have them filtered out of the waiting list.
+    for (const address of [
+      'jsmith@mail.someuniversity.edu',
+      'dana.ruiz@email.smallnonprofit.org',
+      'ed@service.partner.org',
+    ]) {
+      assert(
+        !isAutomatedSender(address, DEFAULT_IGNORED_SENDERS),
+        `treated a possible person at ${address} as bulk`,
+      );
+    }
+  });
+
+  check('real people from a real inbox are never filtered', () => {
+    for (const address of [
+      'jterry@churchillterry.com',
+      'allanv@mindspring.com',
+      'briggen@swcommunityfoundation.org',
+    ]) {
+      assert(
+        !isAutomatedSender(address, DEFAULT_IGNORED_SENDERS),
+        `filtered out a real person: ${address}`,
+      );
+    }
+  });
+
   check('a person is never mistaken for a robot by substring', () => {
     // The whole reason matching is anchored: "news@" must not swallow this, and
     // dropping a real person from the waiting list is the worst failure here.
