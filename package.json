@@ -20,7 +20,8 @@
     "typecheck": "tsc --noEmit",
     "accuracy": "tsx test/accuracy.ts",
     "scenario": "tsx test/scenario.ts",
-    "loop": "tsx test/loop.ts"
+    "loop": "tsx test/loop.ts",
+    "audit": "tsx routine/audit-senders.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",

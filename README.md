@@ -480,6 +480,7 @@ For the weekly summary:
 | `npm run weekly` | Read the week and write `digest.json`. Touches nothing. |
 | `npm run sort` | One sorting sweep, start to finish, via the Claude Code CLI. |
 | `npm run summary` | One end-of-week summary, same way. |
+| `npm run audit` | Check the sender filter against this mailbox. Read-only. |
 | `npm run connect` | Register the MCP server with Claude Desktop. |
 | `npm run disconnect` | Remove it again. Leaves other MCP servers alone. |
 | `npm run mcp` | Run the MCP server by hand. Claude Desktop normally does this. |
@@ -600,6 +601,36 @@ worse than leaving several newsletters in it.
 The remaining misses are consumer retail mail, which barely features in a foundation
 mailbox. If some sender does keep appearing, add it to `STEWARD_IGNORED_SENDERS`
 rather than waiting for the defaults to improve.
+
+### Auditing the mailbox this is actually for
+
+That audit was of a *different* inbox, so it proves the method rather than the
+settings. Run the same check against the real mailbox, on the machine where it's
+installed:
+
+```bash
+npm run audit          # last 60 days
+npm run audit 120      # or a wider window
+```
+
+It prints every distinct sender split into "treated as bulk" and "treated as a
+person", with counts, and marks which ones actually reach her To line — because a
+sender who never does is already excluded by the To-line rule and can be ignored.
+Then it proposes a `STEWARD_IGNORED_SENDERS` line for the high-volume senders whose
+addresses look machine-generated.
+
+**Addresses and counts only — no subjects, no message content, and nothing leaves the
+machine.** It's read-only.
+
+Two things about that proposed line. It lists **candidates, not conclusions**: some
+will be people whose address merely looks automated, and `accounting@her-cpa.com` is
+the obvious shape. And it emits full addresses rather than domain patterns on
+purpose — a domain pattern covers every address a sender rotates through, but it also
+silences everyone else at that domain. Broaden one to `@their-domain.com` yourself,
+once you're sure nobody there writes to her personally.
+
+Prune it before pasting. Excluding a real person removes them from the waiting list
+silently, which is the one failure mode here with no symptom.
 
 ## Two bugs these tests found
 
