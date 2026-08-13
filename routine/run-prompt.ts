@@ -91,23 +91,52 @@ async function main(): Promise<void> {
     console.error(`\nThe ${job.label} failed. Full log: ${logPath}`);
     process.exit(output.code);
   }
+
+  // Exit zero with nothing to show is the failure mode worth shouting about: the
+  // scheduled task reports success, week after week, having done nothing. Treated
+  // as an error so it surfaces in the log and in the task's exit code.
+  if (output.text.trim() === '') {
+    const message =
+      'The CLI exited successfully but produced no output, so nothing was done. ' +
+      'Check that `claude` is signed in: run `claude` once in this folder.';
+    await logTo(logPath, `EMPTY RESULT: ${message}\n`);
+    console.error(message);
+    process.exit(3);
+  }
 }
+
+/**
+ * The fixed instruction passed as the CLI's query argument.
+ *
+ * `claude -p` takes its query from argv; stdin is piped *content*, per the
+ * documented `cat file | claude -p "query"` form. So the long prompt travels as
+ * content and this one short sentence is the query that points at it.
+ *
+ * It is a constant, authored here, containing no shell metacharacters - which is
+ * what makes passing it as an argument safe where passing the prompt itself was
+ * not.
+ */
+const QUERY = 'The text piped to you is your task. Follow every instruction in it exactly.';
 
 /**
  * Run one prompt through the CLI, headless.
  *
- * The prompt goes in on STDIN, and never as an argument. Two independent reasons,
- * either of which is sufficient:
+ * The prompt goes in as piped content on STDIN, never as an argument, and the
+ * argument is the fixed QUERY above. Three reasons, each sufficient on its own:
  *
- *  - Safety. Passing it in argv alongside `shell: true` hands the entire prompt to
- *    a shell for interpretation: its code fences, backticks and `$` become
- *    commands. The first version of this file did exactly that, and running it
- *    produced a stream of `/bin/sh: Do: command not found` while the shell
- *    cheerfully executed fragments of the instructions. Node warns about this
- *    (DEP0190) precisely because arguments are concatenated unescaped.
+ *  - It is the documented shape. `claude -p` reads its query from argv and treats
+ *    stdin as content to work on. An earlier version of this file piped the prompt
+ *    with no query at all, which would have run the schedule and produced nothing -
+ *    the worst possible failure, because it looks like success.
+ *  - Safety. Passing the prompt in argv alongside `shell: true` hands the whole
+ *    thing to a shell for interpretation: its code fences, backticks and `$` become
+ *    commands. An even earlier version did exactly that, and running it produced a
+ *    stream of `/bin/sh: Do: command not found` while the shell executed fragments
+ *    of the instructions. Node warns about this (DEP0190) because arguments are
+ *    concatenated unescaped.
  *  - Size and shape. These prompts are multi-line and a few kilobytes. Command
- *    lines have length limits, and newlines inside a Windows `cmd.exe` argument
- *    are their own category of problem.
+ *    lines have length limits, and newlines inside a Windows `cmd.exe` argument are
+ *    their own category of problem.
  *
  * Windows still needs `cmd.exe` to resolve the CLI's `.cmd` shim, but it is invoked
  * with an explicit argument array rather than a shell string, so nothing is
@@ -120,7 +149,7 @@ function runClaude(
   return new Promise((done) => {
     const isWindows = platform === 'win32';
     const command = isWindows ? 'cmd.exe' : 'claude';
-    const args = isWindows ? ['/c', 'claude', '-p'] : ['-p'];
+    const args = isWindows ? ['/c', 'claude', '-p', QUERY] : ['-p', QUERY];
 
     const child = spawn(command, args, {
       cwd: PROJECT_ROOT,

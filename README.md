@@ -550,6 +550,30 @@ taxonomy, the gate, the sender rules, and the promotion logic.
 message, so corrections stay detectable either way, but they keep separate sender
 rules and would both try to write `Inbox Steward:` rules.
 
+## Not yet verified against a live mailbox
+
+Everything buildable without her mailbox is built and tested. These are the things
+only the real thing can settle, in rough order of how likely they are to bite:
+
+1. **The PowerShell scripts have never executed.** `install.ps1` and
+   `install-tasks.ps1` were written on a Mac. They handle the two known Windows
+   traps (PowerShell 5.1 negotiating TLS 1.0, and `Invoke-WebRequest`'s progress bar)
+   but have not been run. If `install.ps1` fails, fall back to the manual route:
+   download the zip, `npm install`, `npm run setup` — that path is tested.
+2. **The Claude Code CLI invocation.** `npm run sort` pipes the prompt as content and
+   passes a fixed query, matching the documented `cat file | claude -p "query"` form.
+   Run `npm run sort` by hand once before trusting the schedule, and confirm it
+   prints a summary. It exits non-zero if the CLI produces nothing, so a silent
+   no-op cannot masquerade as a successful week.
+3. **Graph behaviours taken from documentation**, not observed: creating a folder
+   with `isHidden`, listing it back with `includeHiddenFolders=true`, filtering the
+   state message by `subject eq`, and `Prefer: outlook.timezone` on `calendarView`.
+   If any is wrong, `npm run plan` says so on the first run.
+4. **Whether the tenant lets a non-admin register an app.** Some don't. The wizard
+   says so at that step.
+
+`npm run plan` is the five-minute version of all of it, and it writes nothing.
+
 ## Two bugs these tests found
 
 Worth recording, because both were invisible and both would have quietly degraded
