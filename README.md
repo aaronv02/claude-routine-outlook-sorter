@@ -113,6 +113,13 @@ already reported. Without this, the week that mattered is never reported at all.
 
 No Gemini or OpenAI key. No database. No server. No hosting.
 
+**Two short pages carry the practical weight of this README:**
+
+- **[DAY-ONE.md](DAY-ONE.md)** — the install, in order, with the fallback for every
+  step that can misbehave. Have it open at her desk.
+- **[HANDOFF.md](HANDOFF.md)** — one page for the person whose mailbox it is. Give her
+  this and nothing else.
+
 ---
 
 ## Asking it things (the MCP server)

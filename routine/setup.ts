@@ -439,6 +439,9 @@ ${connected ? `  ${bold('3.')} ${bold('Fully quit Claude Desktop and reopen it')
      ${bold('it in Outlook the way she normally would.')} It learns from that. There is
      nothing to open and no button to press.
 
+     Everything else she might want is one page: ${bold('HANDOFF.md')}
+     ${dim('(what to ask Claude, what Fridays look like, how to undo it all)')}
+
 ${dim('The sign-in expires after 90 days of no runs, or immediately if her password')}
 ${dim('changes. When that happens the routine reports "invalid_grant" - rerun npm run setup.')}
 `);
